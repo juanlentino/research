@@ -51,3 +51,6 @@ content/**/_drafts/
 
 # Claude Code local state (personal permissions cache)
 .claude/settings.local.json
+
+# generated at build time; CI regenerates from the source of truth
+provenance.json

@@ -3,7 +3,7 @@ import config from "@/keystatic.config";
 
 const cmsEnabled = process.env.ENABLE_CMS === "true";
 
-export const dynamic = cmsEnabled ? "force-dynamic" : "force-static";
+export const dynamic = "force-static";
 
 export function generateStaticParams() {
   return cmsEnabled ? [] : [{ params: ["_"] }];

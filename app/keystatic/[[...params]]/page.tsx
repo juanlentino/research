@@ -4,7 +4,10 @@ import config from "@/keystatic.config";
 
 const cmsEnabled = process.env.ENABLE_CMS === "true";
 
-export const dynamic = cmsEnabled ? "force-dynamic" : "force-static";
+// Next's config parser requires a literal. When CMS is disabled (every
+// production build) we export a static 404; when CMS is enabled, `next dev`
+// runs and this export is ignored.
+export const dynamic = "force-static";
 
 export function generateStaticParams() {
   return cmsEnabled ? [] : [{ params: [] }];
@@ -12,7 +15,7 @@ export function generateStaticParams() {
 
 const CmsPage = makePage(config);
 
-export default function Page(props: Parameters<typeof CmsPage>[0]) {
+export default function Page(props: Record<string, unknown>) {
   if (!cmsEnabled) notFound();
   return <CmsPage {...props} />;
 }
