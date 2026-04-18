@@ -1,0 +1,103 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-signatures:
+    name: Verify commit signatures
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fail on any unsigned commit in PR range
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          echo "Verifying commits in $BASE_SHA..$HEAD_SHA"
+          unsigned=$(git log --pretty=format:'%H %G?' "$BASE_SHA..$HEAD_SHA" | awk '$2 != "G" && $2 != "U" { print $1 }')
+          if [ -n "$unsigned" ]; then
+            echo "::error::Unsigned or unverifiable commits:"
+            echo "$unsigned"
+            exit 1
+          fi
+          echo "All commits in PR range are signed."
+
+  build:
+    name: Typecheck · lint · build · audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Validate Scholar metadata
+        run: npm run validate:scholar
+
+      - name: Generate provenance manifest
+        run: npm run provenance
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (static export)
+        run: npm run build
+
+      - name: Security audit
+        run: npm audit --audit-level=high
+
+      - name: Attest build provenance
+        if: github.ref == 'refs/heads/main'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: "out/**/*"
+
+      - name: Upload static artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: out/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload provenance manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance
+          path: provenance.json
+          retention-days: 90
+          if-no-files-found: error

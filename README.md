@@ -31,6 +31,19 @@ Each MDX file includes YAML frontmatter with publication date, DOI, abstract, an
 
 Next.js 15 · MDX · Tailwind CSS · TypeScript · Static export · Vercel
 
+## Local authoring
+
+Install dependencies and run the dev server with the schema-enforced CMS mounted at `/keystatic`:
+
+```
+npm install
+npm run dev
+```
+
+The admin UI writes MDX files directly into `content/provenance/` with validated frontmatter (required `citation_*` fields, ORCID format, changelog entries). Commit the resulting files as normal — each commit is the timestamped prior-art record.
+
+Production builds (`npm run build`) use `output: 'export'` with the CMS routes disabled. The deployed site is 100% static; there is no backend, no database, and no admin UI in production.
+
 ## Repository policy
 
 Content updates are tracked via git history. Every published note has a timestamped commit, and substantive revisions create new URL versions rather than overwriting prior text. This repository serves as a defensive publication record; its contents should not be deleted.

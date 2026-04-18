@@ -1,0 +1,94 @@
+name: zenodo-deposit
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Topic directory (e.g. provenance)"
+        required: true
+        type: string
+      slug:
+        description: "Note slug (filename without .mdx)"
+        required: true
+        type: string
+      sandbox:
+        description: "Use sandbox.zenodo.org instead of production"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: zenodo-${{ inputs.topic }}-${{ inputs.slug }}
+  cancel-in-progress: false
+
+jobs:
+  deposit:
+    name: Deposit to Zenodo
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TOPIC: ${{ inputs.topic }}
+      SLUG: ${{ inputs.slug }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Validate inputs
+        run: |
+          set -euo pipefail
+          if ! [[ "$TOPIC" =~ ^[a-z][a-z0-9-]*$ ]]; then
+            echo "::error::invalid topic"
+            exit 1
+          fi
+          if ! [[ "$SLUG" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+            echo "::error::invalid slug"
+            exit 1
+          fi
+          test -f "content/$TOPIC/$SLUG.mdx" || {
+            echo "::error::no note at content/$TOPIC/$SLUG.mdx"
+            exit 1
+          }
+
+      - name: Deposit (sandbox)
+        if: ${{ inputs.sandbox }}
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_SANDBOX_TOKEN }}
+          ZENODO_SANDBOX: "true"
+        run: node scripts/zenodo-deposit.mjs "$TOPIC" "$SLUG"
+
+      - name: Deposit (production)
+        if: ${{ !inputs.sandbox }}
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+        run: node scripts/zenodo-deposit.mjs "$TOPIC" "$SLUG"
+
+      - name: Open PR with DOI
+        if: ${{ !inputs.sandbox }}
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: doi/${{ inputs.topic }}-${{ inputs.slug }}
+          title: "doi(${{ inputs.topic }}/${{ inputs.slug }}): mint Zenodo DOI"
+          commit-message: "doi(${{ inputs.topic }}/${{ inputs.slug }}): Zenodo DOI minted"
+          body: |
+            Automated DOI mint via Zenodo deposit workflow.
+
+            - Topic: `${{ inputs.topic }}`
+            - Slug: `${{ inputs.slug }}`
+
+            The MDX frontmatter has been updated with `doi` and `pdf_url`.
+            Review, merge, and the deployed note will carry the DOI.
+          sign-commits: true
+          signoff: true

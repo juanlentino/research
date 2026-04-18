@@ -1,0 +1,49 @@
+---
+title: "On the structure of this archive"
+slug: "welcome"
+topic: "provenance"
+date_published: "2026-04-18"
+date_updated: "2026-04-18"
+author: "Juan Lentino"
+orcid: "0009-0006-8151-5920"
+license: "CC-BY-4.0"
+canonical_url: "https://research.juanlentino.com/provenance/welcome/"
+abstract: "A meta-note explaining the function of research.juanlentino.com as a defensive-publication archive, the role of git history as timestamped prior art, and the parallel deposit workflow to Zenodo for DOI minting."
+keywords:
+  - defensive-publication
+  - provenance
+  - prior-art
+  - open-science
+version: 1
+changelog:
+  - date: "2026-04-18"
+    change: "Initial publication."
+---
+
+This site exists to do three things, in order of importance.
+
+## 1. Serve as a defensive-publication record
+
+Every note published here enters the public domain of prior art the moment it is committed to the public git repository. A signed commit to `github.com/juanlentino/research` establishes an immutable timestamp — one that any patent examiner, standards body, or court of competent jurisdiction can verify independently against GitHub's Merkle tree and, transitively, Git's SHA-256 commit graph.
+
+The value of this record is not rhetorical. If a note describes a technique for cryptographically binding a stem to a session identifier, and that technique is later claimed in a patent application, the git commit containing this note is *evidence*. The canonical URL is the reading surface; the commit is the artifact.
+
+## 2. Provide a citable reference for academic and industry work
+
+Each note is deposited in parallel to Zenodo, which mints a DOI. The DOI is the stable identifier for academic citation. The canonical URL on this site is the stable identifier for web citation. Both resolve to the same content; both are versioned; neither is ever deleted.
+
+Scholar indexing depends on a narrow set of `<meta>` tags — `citation_title`, `citation_author`, `citation_publication_date`, `citation_doi`, `citation_journal_title` — which this site emits on every note page.[^1] Absent any one of these, a note will not appear in Google Scholar search results. The frontmatter schema enforces their presence.
+
+## 3. Be readable
+
+Tone is direct. Sentences are short. Em-dashes are rationed. There are no hero images, no cookie banners, no newsletter popups, no inline advertising. The reading surface is built to be trusted on a five-inch phone in a terminal lounge at 2am and on a desktop monitor in a university library at noon.
+
+## Versioning
+
+Typographical fixes, reference additions, and clarifications happen silently in place; the `date_updated` field and the `changelog` entry are the authoritative trail. Substantive revisions — rewrites, thesis shifts, retractions — create a new versioned URL (`/provenance/<slug>/v2/`) and the previous URL redirects. Notes are never deleted. A retracted note keeps its URL live with a retraction notice.
+
+## Licensing
+
+All content on this site is released under the Creative Commons Attribution 4.0 International license. You may quote, translate, adapt, and build upon any note, including for commercial purposes, provided you attribute the source. The license is irrevocable.
+
+[^1]: Google Scholar Inclusion Guidelines — "Indexing: configure your website". https://scholar.google.com/intl/en/scholar/inclusion.html

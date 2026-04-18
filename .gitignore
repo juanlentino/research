@@ -48,3 +48,6 @@ next-env.d.ts
 
 # draft notes (unpublished)
 content/**/_drafts/
+
+# Claude Code local state (personal permissions cache)
+.claude/settings.local.json

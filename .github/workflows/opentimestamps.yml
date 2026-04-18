@@ -1,0 +1,78 @@
+name: opentimestamps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/**/*.mdx"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ots-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  stamp:
+    name: Stamp changed MDX notes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install OpenTimestamps client
+        run: pip install --no-cache-dir opentimestamps-client==0.7.2
+
+      - name: Determine changed MDX files
+        id: changed
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BEFORE_SHA:-}" ] || [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            files=$(git ls-files 'content/**/*.mdx')
+          else
+            files=$(git diff --name-only --diff-filter=AM "$BEFORE_SHA" HEAD -- 'content/**/*.mdx' || true)
+          fi
+          printf '%s\n' "$files" | awk 'NF' > /tmp/mdx-changed.txt
+          echo "count=$(wc -l < /tmp/mdx-changed.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Stamp files
+        if: steps.changed.outputs.count != '0'
+        run: |
+          set -euo pipefail
+          while IFS= read -r f; do
+            if [ -f "$f" ]; then
+              echo "stamping $f"
+              ots stamp "$f"
+            fi
+          done < /tmp/mdx-changed.txt
+
+      - name: Configure git identity
+        if: steps.changed.outputs.count != '0'
+        run: |
+          git config user.name  "ots-bot"
+          git config user.email "ots-bot@users.noreply.github.com"
+
+      - name: Commit .ots proofs
+        if: steps.changed.outputs.count != '0'
+        run: |
+          set -euo pipefail
+          git add 'content/**/*.ots' || true
+          if git diff --cached --quiet; then
+            echo "no new proofs to commit"
+            exit 0
+          fi
+          git commit -m "chore(ots): stamp changed MDX notes"
+          git push
