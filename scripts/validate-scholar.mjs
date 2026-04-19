@@ -14,6 +14,27 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 
+// YAML parses unquoted `YYYY-MM-DD` as a native timestamp, so gray-matter
+// returns those fields as Date objects. Keystatic Cloud's fields.date()
+// writes dates unquoted — coerce back to `YYYY-MM-DD` strings at the parse
+// boundary so the ISO_DATE regex below works identically for both forms.
+function normalizeFrontmatterDates(data) {
+  const toIso = (v) =>
+    v instanceof Date && !Number.isNaN(v.getTime())
+      ? v.toISOString().slice(0, 10)
+      : v;
+  const out = { ...data };
+  for (const k of ["date_published", "date_updated", "scheduled_for"]) {
+    out[k] = toIso(out[k]);
+  }
+  if (Array.isArray(out.changelog)) {
+    out.changelog = out.changelog.map((e) =>
+      e && typeof e === "object" ? { ...e, date: toIso(e.date) } : e,
+    );
+  }
+  return out;
+}
+
 const REQUIRED = [
   "title",
   "slug",
@@ -54,7 +75,8 @@ for (const topic of topics) {
 
   for (const file of files) {
     const path = join(dir, file);
-    const { data: fm } = matter(readFileSync(path, "utf8"));
+    const { data: raw } = matter(readFileSync(path, "utf8"));
+    const fm = normalizeFrontmatterDates(raw);
     const errs = [];
     const slug = file.replace(/\.mdx$/, "");
 

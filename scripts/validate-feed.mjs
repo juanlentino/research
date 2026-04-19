@@ -19,6 +19,27 @@ import { join } from "node:path";
 import matter from "gray-matter";
 import { XMLParser } from "fast-xml-parser";
 
+// YAML parses unquoted `YYYY-MM-DD` as a native timestamp, so gray-matter
+// returns those fields as Date objects. Keystatic Cloud writes dates
+// unquoted — coerce back to `YYYY-MM-DD` strings so localeCompare and
+// `new Date(string)` downstream work identically for both forms.
+function normalizeFrontmatterDates(data) {
+  const toIso = (v) =>
+    v instanceof Date && !Number.isNaN(v.getTime())
+      ? v.toISOString().slice(0, 10)
+      : v;
+  const out = { ...data };
+  for (const k of ["date_published", "date_updated", "scheduled_for"]) {
+    out[k] = toIso(out[k]);
+  }
+  if (Array.isArray(out.changelog)) {
+    out.changelog = out.changelog.map((e) =>
+      e && typeof e === "object" ? { ...e, date: toIso(e.date) } : e,
+    );
+  }
+  return out;
+}
+
 const ROOT = process.cwd();
 const CONTENT = join(ROOT, "content");
 
@@ -60,7 +81,8 @@ function collectNotes(topicFilter = null) {
     const dir = join(CONTENT, topic);
     const files = readdirSync(dir).filter((f) => f.endsWith(".mdx"));
     for (const file of files) {
-      const { data: fm } = matter(readFileSync(join(dir, file), "utf8"));
+      const { data: raw } = matter(readFileSync(join(dir, file), "utf8"));
+      const fm = normalizeFrontmatterDates(raw);
       // Mirror lib/content.ts getNotesByTopic: drafts are excluded
       // from the live feed, so the validator's local feed must match.
       if (fm.status === "draft") continue;
