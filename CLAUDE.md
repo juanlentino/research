@@ -28,7 +28,7 @@ Author: Juan Lentino. Voting member, The Recording Academy and The Latin Recordi
 
 **CMS:** Keystatic Cloud, project `research/research`. Browser-authored notes commit to this repo via the GitHub API. Entry point: https://research.juanlentino.com/keystatic. Local authoring via `npm run dev` is supported — the "Allow local development" setting on Keystatic Cloud permits 127.0.0.1 auth.
 
-**DNS:** Cloudflare → Vercel. Cloudflare handles http→https upgrade and TLS termination.
+**DNS:** Cloudflare (DNS only, not proxied) → Vercel. **Vercel** serves the http→https 308 redirect and TLS termination — confirmed by the `server: Vercel` response header. If Cloudflare proxying is enabled later, the redirect source will shift and the documented "where the rule lives" note here must be updated.
 
 ## URL structure
 

@@ -1,0 +1,55 @@
+name: generate-pdfs
+
+on:
+  deployment_status:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pdfs-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    name: Render note PDFs
+    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate PDFs from live site
+        env:
+          PUPPETEER_CACHE_DIR: /home/runner/.cache/puppeteer
+        run: npm run generate:pdfs
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "pdf-bot"
+          git config user.email "pdf-bot@users.noreply.github.com"
+
+      - name: Commit PDF artifacts
+        run: |
+          set -euo pipefail
+          git add 'public/pdf/**/*.pdf' || true
+          if git diff --cached --quiet; then
+            echo "no new PDFs to commit"
+            exit 0
+          fi
+          git commit -m "chore(pdfs): render published notes to PDF"
+          git push

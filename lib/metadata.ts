@@ -1,6 +1,23 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import type { Metadata } from "next";
 import type { NoteFrontmatter } from "./types";
 import { SITE } from "./site";
+
+function resolvePdfUrl(fm: NoteFrontmatter): string | null {
+  if (fm.pdf_url) return fm.pdf_url;
+  const localPath = join(
+    process.cwd(),
+    "public",
+    "pdf",
+    fm.topic,
+    `${fm.slug}.pdf`,
+  );
+  if (existsSync(localPath)) {
+    return `${SITE.url}/pdf/${fm.topic}/${fm.slug}.pdf`;
+  }
+  return null;
+}
 
 export function scholarMeta(fm: NoteFrontmatter): Record<string, string> {
   const meta: Record<string, string> = {
@@ -22,8 +39,9 @@ export function scholarMeta(fm: NoteFrontmatter): Record<string, string> {
     meta.citation_doi = fm.doi;
     meta["DC.identifier.doi"] = fm.doi;
   }
-  if (fm.pdf_url) {
-    meta.citation_pdf_url = fm.pdf_url;
+  const pdfUrl = resolvePdfUrl(fm);
+  if (pdfUrl) {
+    meta.citation_pdf_url = pdfUrl;
   }
   meta["DC.subject"] = fm.keywords.join("; ");
   meta.citation_keywords = fm.keywords.join("; ");

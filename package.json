@@ -12,8 +12,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "validate:scholar": "node scripts/validate-scholar.mjs",
+    "validate:feed": "node scripts/validate-feed.mjs",
+    "generate:pdfs": "node scripts/generate-pdfs.mjs",
     "provenance": "node scripts/provenance.mjs",
-    "prebuild": "npm run validate:scholar && npm run provenance"
+    "prebuild": "npm run validate:scholar && npm run validate:feed && npm run provenance"
   },
   "dependencies": {
     "@keystatic/core": "0.5.50",
@@ -36,7 +38,9 @@
     "@types/react-dom": "19.0.2",
     "eslint": "9.17.0",
     "eslint-config-next": "15.5.15",
+    "fast-xml-parser": "^5.7.1",
     "postcss": "8.4.49",
+    "puppeteer": "^24.41.0",
     "tailwindcss": "4.2.2",
     "typescript": "5.7.2"
   },

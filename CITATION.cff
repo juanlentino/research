@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you reference content from this archive, please cite the individual note's DOI. Use this file to cite the archive as a whole."
+type: dataset
+title: "research.juanlentino.com — technical notes and defensive publications"
+abstract: "A living archive of technical notes, defensive publications, and long-form writing on music rights infrastructure, cryptographic provenance, and AI-era metadata systems. Each note is timestamped in git, anchored to Bitcoin via OpenTimestamps, cross-referenced by Zenodo DOI, and released under CC BY 4.0."
+authors:
+  - family-names: Lentino
+    given-names: Juan
+    orcid: "https://orcid.org/0009-0006-8151-5920"
+    email: juan@juanlentino.com
+    affiliation: "Panacea Studio"
+url: "https://research.juanlentino.com"
+repository-code: "https://github.com/juanlentino/research"
+license: CC-BY-4.0
+keywords:
+  - defensive-publication
+  - music-rights
+  - cryptographic-provenance
+  - metadata-systems
+  - prior-art
