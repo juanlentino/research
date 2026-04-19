@@ -14,7 +14,6 @@ import { ProvenancePanel } from "@/components/provenance-panel";
 import { getNote, getNotesByTopic } from "@/lib/content";
 import { buildNoteMetadata } from "@/lib/metadata";
 import { getProvenance } from "@/lib/provenance";
-import { useMDXComponents } from "@/mdx-components";
 
 const TOPIC = "provenance";
 
@@ -43,7 +42,6 @@ export default async function NotePage({
   if (!note) notFound();
 
   const provenance = getProvenance(TOPIC, slug);
-  const components = useMDXComponents({});
 
   return (
     <Container>
@@ -52,7 +50,6 @@ export default async function NotePage({
         <Prose>
           <MDXRemote
             source={note.body}
-            components={components}
             options={{
               mdxOptions: {
                 remarkPlugins: [remarkGfm, remarkSmartypants],

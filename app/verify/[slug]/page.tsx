@@ -98,7 +98,7 @@ shasum -a 256 ${entry.content_path}`}
               {entry.ots_proof ? (
                 <>
                   <p className="mb-3 text-[var(--fg-muted)]">
-                    The proof anchors the MDX file's hash to the Bitcoin
+                    The proof anchors the MDX file&apos;s hash to the Bitcoin
                     blockchain via the OpenTimestamps calendar servers.
                     Verification is independent of GitHub.
                   </p>
