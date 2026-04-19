@@ -53,16 +53,17 @@ function collectNotes(topicFilter = null) {
   const notes = [];
   if (!existsSync(CONTENT)) return notes;
   const topics = readdirSync(CONTENT, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && !d.name.startsWith("_"))
+    .filter((d) => d.isDirectory())
     .map((d) => d.name);
   for (const topic of topics) {
     if (topicFilter && topic !== topicFilter) continue;
     const dir = join(CONTENT, topic);
-    const files = readdirSync(dir).filter(
-      (f) => f.endsWith(".mdx") && !f.startsWith("_"),
-    );
+    const files = readdirSync(dir).filter((f) => f.endsWith(".mdx"));
     for (const file of files) {
       const { data: fm } = matter(readFileSync(join(dir, file), "utf8"));
+      // Mirror lib/content.ts getNotesByTopic: drafts are excluded
+      // from the live feed, so the validator's local feed must match.
+      if (fm.status === "draft") continue;
       notes.push(fm);
     }
   }

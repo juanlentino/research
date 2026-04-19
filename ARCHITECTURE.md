@@ -49,12 +49,13 @@ Every URL is a potential citation target. Changes to the URL scheme require 301 
 ```
 content/
 ├── provenance/
-│   ├── <slug>.mdx
-│   ├── <slug>.mdx.ots     OpenTimestamps proof (auto-generated, committed)
-│   └── _drafts/           unpublished notes (tracked in git, excluded from build)
+│   ├── <slug>.mdx         status: draft | published | retracted
+│   └── <slug>.mdx.ots     OpenTimestamps proof (auto-generated, committed)
 └── <future-topic>/
     └── ...
 ```
+
+Every note lives flat at `content/<topic>/<slug>.mdx`. Visibility on reader-facing surfaces (index, feeds, sitemap, dynamic routes) is gated by the frontmatter `status` field — `draft` hides the note from the build, `published` exposes it, `retracted` keeps the URL live with a retraction notice. Keystatic Cloud's `path: "content/provenance/*"` glob writes to the same location; flipping `status` is the entire publish/unpublish action.
 
 ## MDX frontmatter
 

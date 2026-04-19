@@ -3,10 +3,9 @@
 // required for Google Scholar indexing and Zenodo DOI cross-referencing.
 // Exits non-zero on any failure so CI blocks the merge.
 //
-// Scans content/<topic>/*.mdx. Files in _drafts/ subdirectories are
-// intentionally skipped — drafts are tracked in git but excluded from
-// the build surface and not subject to Scholar requirements. Files
-// beginning with _ are skipped for the same reason.
+// Scans content/<topic>/*.mdx. Every MDX note is validated regardless
+// of status — draft frontmatter still needs well-formed Scholar fields
+// so flipping status to "published" never silently breaks the feed.
 //
 // Failure messages are specific by design: CI output should tell the
 // author exactly which field failed and why, not just "validation failed".
@@ -40,7 +39,7 @@ const SITE_URL = "https://research.juanlentino.com";
 
 const root = join(process.cwd(), "content");
 const topics = readdirSync(root, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && !d.name.startsWith("_"))
+  .filter((d) => d.isDirectory())
   .map((d) => d.name);
 
 let failures = 0;
@@ -51,11 +50,7 @@ const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 for (const topic of topics) {
   const dir = join(root, topic);
-  const files = readdirSync(dir).filter((f) => {
-    if (!f.endsWith(".mdx")) return false;
-    if (f.startsWith("_")) return false;
-    return true;
-  });
+  const files = readdirSync(dir).filter((f) => f.endsWith(".mdx"));
 
   for (const file of files) {
     const path = join(dir, file);

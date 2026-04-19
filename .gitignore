@@ -46,11 +46,10 @@ next-env.d.ts
 *.swp
 *.swo
 
-# Draft notes live under content/<topic>/_drafts/ and are tracked in git
-# (so collaborators can see in-flight work) but excluded from the build
-# surface by lib/content.ts and scripts/validate-scholar.mjs. Do not
-# gitignore this path — drafts without a commit trail have no
-# defensive-publication value.
+# Draft notes live flat at content/<topic>/<slug>.mdx with status: draft
+# in frontmatter. They are tracked in git so the commit history provides
+# defensive prior-art even for unpublished work. Visibility on the site
+# is gated by frontmatter status, not by path — see lib/content.ts.
 
 # Claude Code local state (personal permissions cache)
 .claude/settings.local.json

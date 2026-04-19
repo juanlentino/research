@@ -45,13 +45,11 @@ function collectPublishedNotes() {
   const notes = [];
   if (!existsSync(CONTENT)) return notes;
   const topics = readdirSync(CONTENT, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && !d.name.startsWith("_"))
+    .filter((d) => d.isDirectory())
     .map((d) => d.name);
   for (const topic of topics) {
     const dir = join(CONTENT, topic);
-    const files = readdirSync(dir).filter(
-      (f) => f.endsWith(".mdx") && !f.startsWith("_"),
-    );
+    const files = readdirSync(dir).filter((f) => f.endsWith(".mdx"));
     for (const file of files) {
       const { data: fm } = matter(readFileSync(join(dir, file), "utf8"));
       if (fm.status && fm.status !== "published") continue;
