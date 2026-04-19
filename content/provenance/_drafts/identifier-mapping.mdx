@@ -1,0 +1,107 @@
+---
+title: "Provenance tokens as a substrate for music identifier mapping"
+slug: "identifier-mapping"
+topic: "provenance"
+date_published: "2026-05-10"
+date_updated: "2026-05-10"
+author: "Juan Lentino"
+orcid: "0009-0006-8151-5920"
+license: "CC-BY-4.0"
+canonical_url: "https://research.juanlentino.com/provenance/identifier-mapping"
+abstract: "Placeholder abstract — to be written at ~200 words. Argues that the current music identifier regime (ISRC, ISWC, UPC, ISNI, IPI) treats identity as an administrative artifact, issued by rights organizations and mutable by them, rather than as a cryptographic property of the work itself. Proposes provenance tokens — content-addressed, signature-anchored identifiers bound at the point of creation — as a substrate under which existing identifiers become registered aliases rather than primary keys. Specifies mapping rules for each identifier class, backward-compatibility patterns that let existing rights databases consume the token layer without breaking changes, and integration points with DDEX ERN, CISAC ISWC-Net, and the US Mechanical Licensing Collective. Closes with open questions about governance, revocation semantics, and the role of standards bodies in a regime where identity is provable rather than asserted."
+keywords:
+  - identifier-mapping
+  - ISRC
+  - ISWC
+  - provenance-tokens
+  - DDEX
+  - standards-integration
+version: 1
+status: draft
+changelog:
+  - date: "2026-04-18"
+    change: "Draft scaffold — outline only, body to follow."
+---
+
+## Abstract
+
+[~200-word abstract placeholder. Expand before promotion. Cover: problem statement, proposed substrate, mapping approach, compatibility claim, standards integration, expected resistance.]
+
+## Current identifier landscape
+
+### ISRC — International Standard Recording Code
+
+[Role, issuance authority (IFPI/national agencies), structure (CC-XXX-YY-NNNNN), coverage domain (sound recordings), known failure modes (collisions, reassignment, AI-generated content attribution).]
+
+### ISWC — International Standard Musical Work Code
+
+[CISAC authority, structure (T-XXX.XXX.XXX-C), coverage domain (musical compositions), interaction with ISRC, split-sheet disputes, common mis-registrations.]
+
+### UPC — Universal Product Code
+
+[GS1 authority, retail / distribution layer, relationship to release bundles, why UPC is not an ISRC and why the confusion persists in DSP metadata.]
+
+### ISNI — International Standard Name Identifier
+
+[ISO 27729, party identification, ambiguity resolution for contributors, how ISNI intersects with ORCID for academic authors and MusicBrainz for recording artists.]
+
+### IPI — Interested Party Information
+
+[CISAC internal identifier, PRO membership linkage, why IPI is opaque to non-members and what breaks because of it.]
+
+## Structural weaknesses of the current regime
+
+[Identity is administrative, not cryptographic. Identifiers can be re-issued, unrevoked, or disputed without a canonical arbiter. Cross-registry reconciliation is manual and lossy. AI-generated works expose the gap between "we registered this" and "we can prove it was made this way."]
+
+## Provenance tokens as a substrate
+
+[Conceptual model: a content-addressed identifier derived from a hash of the canonical work, signed by the author's key at the moment of creation, timestamped externally (OpenTimestamps / blockchain anchor), and recorded in a distributed append-only log. Registered identifiers (ISRC, ISWC, etc.) become *aliases* for the token, not primary keys.]
+
+## Mapping rules
+
+### Token → ISRC
+
+[Mapping semantics for sound recordings. Token fields: hash of master audio, signature over the hash, timestamp. ISRC becomes a registered alias. Re-issuance of the ISRC does not change the token.]
+
+### Token → ISWC
+
+[Mapping for compositions. Token binds to the notated work (score/lead sheet hash) + the list of contributing composers' keys. Split disputes resolve against signatures, not administrative record.]
+
+### Token → UPC
+
+[Mapping for release bundles. A UPC points to a set of tokens (one per track). The bundle itself has its own token.]
+
+### Token → ISNI / IPI
+
+[Mapping for parties. A person's token is their key. ISNI and IPI are registered aliases maintained by the respective authorities.]
+
+## Backward-compatibility patterns
+
+[How existing rights databases adopt tokens without re-issuing every ISRC. Claim: the token layer sits *above* the existing layer; no existing identifier changes. Databases add a token column; queries can still use the legacy identifier. Discuss ingest of historical catalog, handling of missing or disputed identifiers, and the opt-in path.]
+
+## Standards-body integration points
+
+### DDEX ERN
+
+[Where in the ERN schema a token field could be added without breaking existing consumers. Proposed XML element, namespace, required vs. optional. Implementation path with major labels vs. indie distributors.]
+
+### CISAC ISWC-Net
+
+[How the ISWC-Net registry could record tokens alongside ISWCs. Query semantics: "find the ISWC registered against this token". Governance questions for CISAC's member societies.]
+
+### US Mechanical Licensing Collective
+
+[MLC's black-box claim dispute process and how tokens could collapse disputes. Interaction with the public database, requirements for proof-of-ownership, compatibility with the MLC's claims API.]
+
+## Open questions
+
+[Non-exhaustive:
+- Governance: who operates the token registry? What are the failure modes if a single operator becomes untrustworthy?
+- Revocation: tokens are immutable; how do we handle works that must be suppressed (legal takedown, retraction)?
+- Key rotation and inheritance: what happens when an author dies or loses their key?
+- Dispute resolution: when signatures conflict, which arbitration mechanism applies?
+- Standards-body incentives: why would CISAC or IFPI adopt a substrate that dilutes their gatekeeping role?]
+
+## References
+
+[To populate. Place-holder for ~15–25 references covering ISRC/ISWC/UPC/ISNI/IPI standards documents, DDEX ERN specification, CISAC ISWC-Net documentation, MLC public guidance, relevant academic literature on content-addressed storage and cryptographic provenance for media.]
