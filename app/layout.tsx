@@ -2,8 +2,6 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { buildSiteMetadata } from "@/lib/metadata";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
 export const metadata: Metadata = buildSiteMetadata();
@@ -31,11 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           href="/feed.xml"
         />
       </head>
-      <body className="flex min-h-svh flex-col">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
