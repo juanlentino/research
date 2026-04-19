@@ -14,6 +14,27 @@ import { join, relative } from "node:path";
 import { execFileSync } from "node:child_process";
 import matter from "gray-matter";
 
+// YAML parses unquoted `YYYY-MM-DD` as a native timestamp, so gray-matter
+// returns those fields as Date objects. Keystatic Cloud writes dates
+// unquoted — coerce back to `YYYY-MM-DD` strings so the manifest stores
+// stable short dates instead of full ISO-8601 timestamps with time.
+function normalizeFrontmatterDates(data) {
+  const toIso = (v) =>
+    v instanceof Date && !Number.isNaN(v.getTime())
+      ? v.toISOString().slice(0, 10)
+      : v;
+  const out = { ...data };
+  for (const k of ["date_published", "date_updated", "scheduled_for"]) {
+    out[k] = toIso(out[k]);
+  }
+  if (Array.isArray(out.changelog)) {
+    out.changelog = out.changelog.map((e) =>
+      e && typeof e === "object" ? { ...e, date: toIso(e.date) } : e,
+    );
+  }
+  return out;
+}
+
 const ROOT = process.cwd();
 const CONTENT = join(ROOT, "content");
 const OUT_PATH = join(ROOT, "provenance.json");
@@ -56,7 +77,8 @@ function collectNotes() {
       const abs = join(dir, file);
       const rel = relative(ROOT, abs);
       const bytes = readFileSync(abs);
-      const { data: fm } = matter(bytes.toString("utf8"));
+      const { data: raw } = matter(bytes.toString("utf8"));
+      const fm = normalizeFrontmatterDates(raw);
       // Drafts live in git (and get OTS proofs on commit) but are
       // excluded from the signed manifest until their status flips to
       // published. The attestation covers the published archive state,

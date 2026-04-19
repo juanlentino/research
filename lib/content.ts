@@ -54,11 +54,44 @@ function computeReadingStats(body: string) {
   return { words, minutes };
 }
 
+// YAML parses unquoted `YYYY-MM-DD` as a native timestamp, so gray-matter
+// returns those fields as Date objects. Keystatic Cloud's fields.date()
+// writes dates unquoted, meaning every Keystatic-authored entry arrives
+// with Date objects where the type system expects strings. Coerce them
+// back to `YYYY-MM-DD` strings at the parse boundary so downstream code
+// (regex validators, string comparisons, localeCompare) works identically
+// whether the YAML was quoted or not.
+function normalizeFrontmatterDates(
+  data: Record<string, unknown>,
+): Record<string, unknown> {
+  const toIso = (v: unknown): unknown =>
+    v instanceof Date && !Number.isNaN(v.getTime())
+      ? v.toISOString().slice(0, 10)
+      : v;
+  const out: Record<string, unknown> = { ...data };
+  for (const k of ["date_published", "date_updated", "scheduled_for"]) {
+    out[k] = toIso(out[k]);
+  }
+  if (Array.isArray(out.changelog)) {
+    out.changelog = (out.changelog as unknown[]).map((e) =>
+      e && typeof e === "object"
+        ? {
+            ...(e as Record<string, unknown>),
+            date: toIso((e as Record<string, unknown>).date),
+          }
+        : e,
+    );
+  }
+  return out;
+}
+
 function parseNote(topic: string, slug: string): Note {
   const filepath = join(CONTENT_ROOT, topic, `${slug}.mdx`);
   const raw = readFileSync(filepath, "utf8");
   const { data, content } = matter(raw);
-  const frontmatter = data as NoteFrontmatter;
+  const frontmatter = normalizeFrontmatterDates(
+    data as Record<string, unknown>,
+  ) as unknown as NoteFrontmatter;
 
   if (frontmatter.slug !== slug) {
     throw new Error(
