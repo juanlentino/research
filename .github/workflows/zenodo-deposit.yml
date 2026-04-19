@@ -77,7 +77,7 @@ jobs:
 
       - name: Open PR with DOI
         if: ${{ !inputs.sandbox }}
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: doi/${{ inputs.topic }}-${{ inputs.slug }}
           title: "doi(${{ inputs.topic }}/${{ inputs.slug }}): mint Zenodo DOI"
