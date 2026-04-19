@@ -27,20 +27,37 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Fail on any unsigned commit in PR range
+      - name: Fail on any unverified commit in PR range
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          echo "Verifying commits in $BASE_SHA..$HEAD_SHA"
-          unsigned=$(git log --pretty=format:'%H %G?' "$BASE_SHA..$HEAD_SHA" | awk '$2 != "G" && $2 != "U" { print $1 }')
-          if [ -n "$unsigned" ]; then
-            echo "::error::Unsigned or unverifiable commits:"
-            echo "$unsigned"
+          echo "Verifying commits in $BASE_SHA..$HEAD_SHA via GitHub API"
+          # Uses GitHub's verification API, not `git log %G?`. The CI runner's
+          # GPG keyring does not include GitHub's web-flow signing key, so
+          # `%G?` returns 'N' for every API-authored commit (Dependabot, OTS
+          # bot, Keystatic Cloud, the web UI) even though GitHub flags them
+          # as Verified. The API check matches what GitHub's UI shows.
+          unverified=()
+          for sha in $(git log --pretty=%H "$BASE_SHA..$HEAD_SHA"); do
+            verified=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${sha}" \
+              --jq '.commit.verification.verified')
+            if [ "$verified" != "true" ]; then
+              reason=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${sha}" \
+                --jq '.commit.verification.reason')
+              echo "  ✗ $sha — reason: $reason"
+              unverified+=("$sha")
+            else
+              echo "  ✓ $sha"
+            fi
+          done
+          if [ ${#unverified[@]} -gt 0 ]; then
+            echo "::error::${#unverified[@]} unverified commit(s) in PR range"
             exit 1
           fi
-          echo "All commits in PR range are signed."
+          echo "All commits in PR range are verified."
 
   build:
     name: Typecheck · lint · build · audit
