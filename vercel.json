@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": false,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/about/", "destination": "/about", "permanent": true },
+    { "source": "/provenance/", "destination": "/provenance", "permanent": true },
+    { "source": "/provenance/:slug/", "destination": "/provenance/:slug", "permanent": true },
+    { "source": "/verify/:slug/", "destination": "/verify/:slug", "permanent": true },
+    { "source": "/feed.xml/", "destination": "/feed.xml", "permanent": true },
+    { "source": "/sitemap.xml/", "destination": "/sitemap.xml", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",
