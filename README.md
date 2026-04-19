@@ -51,6 +51,56 @@ Three entry points, all producing identical signed-commit artifacts on `main`:
 - **GitHub web editor:** edit `.mdx` files directly on github.com/juanlentino/research or via `github.dev`.
 - **Local:** `npm install && npm run dev` serves the site at `localhost:3000` and the admin at `localhost:3000/keystatic`.
 
+## Local development setup (fresh machine)
+
+```
+git clone https://github.com/juanlentino/research.git
+cd research
+npm install
+npm run dev            # site at localhost:3000, admin at localhost:3000/keystatic
+```
+
+Optional local files (not in git — restore from your backup on a new machine):
+
+- `CLAUDE.md` — Claude Code instructions (AI-tooling config). Place at repo root.
+- `schedule.md` — editorial cadence and campaign calendar. Place at repo root.
+
+Neither file is required to build or serve the site. They only affect AI sessions and editorial planning.
+
+### Enable commit signing (recommended)
+
+CI enforces signed commits on pull requests. Without local signing, your own CLI commits will fail the PR gate. GitHub web, Keystatic, and bot commits already sign via the GitHub API — this only matters for direct-to-terminal work.
+
+```
+# Generate an SSH key for signing (if you don't have one reserved)
+ssh-keygen -t ed25519 -C "juan@juanlentino.com" -f ~/.ssh/id_ed25519_signing
+
+# Add the public key to GitHub as a Signing Key
+# https://github.com/settings/ssh/new — select "Signing Key" (not Authentication)
+cat ~/.ssh/id_ed25519_signing.pub
+
+# Tell git to use SSH signing globally
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519_signing.pub
+git config --global commit.gpgsign true
+```
+
+Commit something trivial; `git log --show-signature -1` should print `Good "git" signature`. GitHub will render the commit with a `Verified` badge.
+
+### Environment variables
+
+Production (Vercel dashboard → Settings → Environment Variables):
+
+| Name | Purpose |
+|------|---------|
+| `VERCEL_DEPLOY_HOOK_URL` | Used by the daily scheduled-publish workflow to ping a rebuild |
+| `ZENODO_TOKEN` | Production Zenodo API token for per-note DOI minting |
+| `ZENODO_SANDBOX_TOKEN` | Sandbox Zenodo token for dry-run DOI deposits |
+| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | Optional — set to `research.juanlentino.com` to enable Plausible analytics |
+| `NEXT_PUBLIC_PLAUSIBLE_SRC` | Optional — override the Plausible script URL for self-hosted instances |
+
+No local env vars are required for development.
+
 ## Repository policy
 
 Content updates are tracked via git history. Every published note has a timestamped commit, and substantive revisions create new URL versions rather than overwriting prior text. This repository serves as a defensive publication record; its contents should not be deleted. See [SECURITY.md](SECURITY.md) for the responsible-disclosure process.

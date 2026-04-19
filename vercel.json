@@ -30,7 +30,7 @@
         { "key": "X-DNS-Prefetch-Control", "value": "off" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://api.keystatic.cloud https://api.github.com https://*.githubusercontent.com; worker-src 'self' blob:; frame-src 'self' https://keystatic.cloud; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://keystatic.cloud; upgrade-insecure-requests"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://api.keystatic.cloud https://api.github.com https://*.githubusercontent.com https://plausible.io; worker-src 'self' blob:; frame-src 'self' https://keystatic.cloud; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://keystatic.cloud; upgrade-insecure-requests"
         }
       ]
     },

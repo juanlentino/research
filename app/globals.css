@@ -197,3 +197,79 @@ hr {
   font-family: var(--font-sans);
   font-size: 0.7em;
 }
+
+/* Print — for readers who print notes from the browser rather than
+   download the PDF. Strips site chrome, forces light palette, widens
+   measure slightly for the printed page, expands footnote targets. */
+@media print {
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --bg-raised: #ffffff;
+    --fg: #000000;
+    --fg-muted: #333333;
+    --fg-subtle: #555555;
+    --rule: #cccccc;
+    --accent: #000000;
+  }
+
+  html {
+    font-size: 11pt;
+  }
+
+  body {
+    background: #ffffff !important;
+  }
+
+  header,
+  footer,
+  nav,
+  .theme-toggle,
+  button[aria-label="Toggle theme"] {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  article,
+  .prose-body {
+    max-width: none !important;
+    font-size: 11pt;
+    line-height: 1.55;
+    color: #000000;
+  }
+
+  a {
+    color: #000000;
+    text-decoration: underline;
+  }
+
+  /* Emit link targets after printed text. Skip for in-document fragment
+     links (#foo) since they add noise without value on paper. */
+  a[href^="http"]::after {
+    content: " <" attr(href) ">";
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    color: #555555;
+    word-break: break-all;
+  }
+
+  .prose-body pre,
+  .prose-body blockquote {
+    page-break-inside: avoid;
+  }
+
+  .prose-body h2,
+  .prose-body h3 {
+    page-break-after: avoid;
+  }
+
+  /* Hide the reader-facing provenance panel and verify link in print —
+     the PDF snapshot carries that info separately. */
+  .print\\:hidden,
+  section[aria-label="provenance"] {
+    display: none !important;
+  }
+}
