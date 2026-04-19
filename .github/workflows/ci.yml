@@ -102,7 +102,7 @@ jobs:
       # attestation covers the entire archive state at this commit.
       - name: Attest provenance manifest
         if: github.ref == 'refs/heads/main'
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: "provenance.json"
 
