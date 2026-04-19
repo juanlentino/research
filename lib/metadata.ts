@@ -43,6 +43,12 @@ export function scholarMeta(fm: NoteFrontmatter): Record<string, string> {
   if (pdfUrl) {
     meta.citation_pdf_url = pdfUrl;
   }
+  if (fm.ssrn_url) {
+    // SSRN mirror of the note. Scholar recognizes citation_repository_url
+    // and will use it as an additional retrieval source for crawling.
+    meta.citation_repository_url = fm.ssrn_url;
+    meta["DC.relation"] = fm.ssrn_url;
+  }
   meta["DC.subject"] = fm.keywords.join("; ");
   meta.citation_keywords = fm.keywords.join("; ");
   return meta;

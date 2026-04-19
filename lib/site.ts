@@ -8,6 +8,10 @@ export const SITE = {
     name: "Juan Lentino",
     email: "juan@juanlentino.com",
     orcid: "0009-0006-8151-5920",
+    ssrn: {
+      id: "10707417",
+      url: "https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=10707417",
+    },
   },
   license: {
     id: "CC-BY-4.0",

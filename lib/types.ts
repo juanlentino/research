@@ -21,6 +21,7 @@ export interface NoteFrontmatter {
   version: number;
   status: NoteStatus;
   pdf_url?: string;
+  ssrn_url?: string;
   changelog: ChangelogEntry[];
 }
 

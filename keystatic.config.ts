@@ -77,8 +77,14 @@ export default config({
           validation: { isRequired: true },
         }),
         pdf_url: fields.url({
-          label: "PDF URL",
-          description: "Link to the Zenodo-hosted PDF snapshot.",
+          label: "PDF URL (override)",
+          description:
+            "Defaults to the auto-generated /pdf/<topic>/<slug>.pdf. Set this to override — e.g., point at a Zenodo-hosted PDF.",
+        }),
+        ssrn_url: fields.url({
+          label: "SSRN mirror URL",
+          description:
+            "Optional. If this note has a companion SSRN abstract page, paste its URL. Emits citation_repository_url for Scholar.",
         }),
         abstract: fields.text({
           label: "Abstract",

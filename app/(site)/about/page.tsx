@@ -53,6 +53,9 @@ export default function AboutPage() {
               </a>
             </li>
             <li>
+              SSRN: <a href={SITE.author.ssrn.url}>author page</a>
+            </li>
+            <li>
               Email: <a href={`mailto:${SITE.author.email}`}>{SITE.author.email}</a>
             </li>
             <li>
