@@ -1,14 +1,28 @@
 ---
-title: "Provenance tokens as a substrate for music identifier mapping"
-slug: "identifier-mapping"
-topic: "provenance"
-date_published: "2026-05-10"
-date_updated: "2026-05-10"
-author: "Juan Lentino"
-orcid: "0009-0006-8151-5920"
-license: "CC-BY-4.0"
-canonical_url: "https://research.juanlentino.com/provenance/identifier-mapping"
-abstract: "Placeholder abstract — to be written at ~200 words. Argues that the current music identifier regime (ISRC, ISWC, UPC, ISNI, IPI) treats identity as an administrative artifact, issued by rights organizations and mutable by them, rather than as a cryptographic property of the work itself. Proposes provenance tokens — content-addressed, signature-anchored identifiers bound at the point of creation — as a substrate under which existing identifiers become registered aliases rather than primary keys. Specifies mapping rules for each identifier class, backward-compatibility patterns that let existing rights databases consume the token layer without breaking changes, and integration points with DDEX ERN, CISAC ISWC-Net, and the US Mechanical Licensing Collective. Closes with open questions about governance, revocation semantics, and the role of standards bodies in a regime where identity is provable rather than asserted."
+title: Provenance tokens as a substrate for music identifier mapping
+slug: identifier-mapping
+topic: provenance
+date_published: 2026-05-10
+date_updated: 2026-05-10
+scheduled_for: 2026-05-10
+author: Juan Lentino
+orcid: 0009-0006-8151-5920
+license: CC-BY-4.0
+canonical_url: https://research.juanlentino.com/provenance/identifier-mapping
+abstract: >-
+  Placeholder abstract — to be written at ~200 words. Argues that the current
+  music identifier regime (ISRC, ISWC, UPC, ISNI, IPI) treats identity as an
+  administrative artifact, issued by rights organizations and mutable by them,
+  rather than as a cryptographic property of the work itself. Proposes
+  provenance tokens — content-addressed, signature-anchored identifiers bound at
+  the point of creation — as a substrate under which existing identifiers become
+  registered aliases rather than primary keys. Specifies mapping rules for each
+  identifier class, backward-compatibility patterns that let existing rights
+  databases consume the token layer without breaking changes, and integration
+  points with DDEX ERN, CISAC ISWC-Net, and the US Mechanical Licensing
+  Collective. Closes with open questions about governance, revocation semantics,
+  and the role of standards bodies in a regime where identity is provable rather
+  than asserted.
 keywords:
   - identifier-mapping
   - ISRC
@@ -19,89 +33,383 @@ keywords:
 version: 1
 status: draft
 changelog:
-  - date: "2026-04-18"
-    change: "Draft scaffold — outline only, body to follow."
+  - date: 2026-04-18
+    change: Draft scaffold — outline only, body to follow.
 ---
+`The music industry runs on identifiers. Every recording has an ISRC. Every registered composition has an ISWC. Every product has a UPC. Every person with rights in any of the above has — in principle — an ISNI, an IPI, or both. Behind the scenes, these codes move billions of dollars every year through a global web of CMOs, DSPs, distributors, publishers, and labels. The system works, mostly. When it fails, it fails in the same direction: money that cannot be routed sits in unmatched pools, growing faster than anyone is catching up on.`
 
-## Abstract
+` `
 
-[~200-word abstract placeholder. Expand before promotion. Cover: problem statement, proposed substrate, mapping approach, compatibility claim, standards integration, expected resistance.]
+``At the MLC, the blanket unmatched pool stood at roughly $210 million as of the 2023 Annual Royalty Recap, with an additional $23 million held for legal or operational reasons. That sits alongside the roughly $397 million in historical unmatched royalties that DSPs transferred to the MLC in 2021 for streaming activity between 2007 and 2020 — a separate pool representing the "black box" that existed before the MLC was established. Combined, these figures represent hundreds of millions of dollars whose rightful owners are known to exist but cannot be reliably identified through the current stack. The causes are well-documented: mis-linked ISRCs and ISWCs, inconsistent metadata across distributors, identifier collisions, and rightsholder records that disagree across registries. The deeper cause, the one that sits underneath each of these symptoms, is that the identifier stack cannot verify itself. Every identifier in current use is a trust-the-assigner system. The registry says this recording is ISRC `USXYZ2500001`; you believe the registry. The distributor says this work is ISWC `T-034.524.680-1`; you believe the distributor. When the assigner is wrong, lazy, compromised, or adversarial, the error propagates through the entire downstream system with no mechanism for detection.``
 
-## Current identifier landscape
+` `
 
-### ISRC — International Standard Recording Code
+`Cryptographic provenance changes this. A provenance token binds authorship and contribution claims to the audio content itself, through a signed chain of assertions that any party can verify without contacting the original assigner. This note describes how such tokens coexist with the legacy identifier stack rather than replacing it. The thesis is that legacy identifiers stay exactly where they are, and provenance tokens sit above them, and the industry gains verification without giving up the plumbing it already trusts.`
 
-[Role, issuance authority (IFPI/national agencies), structure (CC-XXX-YY-NNNNN), coverage domain (sound recordings), known failure modes (collisions, reassignment, AI-generated content attribution).]
+` `
 
-### ISWC — International Standard Musical Work Code
+`## The legacy identifier stack`
 
-[CISAC authority, structure (T-XXX.XXX.XXX-C), coverage domain (musical compositions), interaction with ISRC, split-sheet disputes, common mis-registrations.]
+` `
 
-### UPC — Universal Product Code
+`Before describing what provenance tokens add, it is worth being specific about what the existing stack does and where it breaks.`
 
-[GS1 authority, retail / distribution layer, relationship to release bundles, why UPC is not an ISRC and why the confusion persists in DSP metadata.]
+` `
 
-### ISNI — International Standard Name Identifier
+`### ISRC`
 
-[ISO 27729, party identification, ambiguity resolution for contributors, how ISNI intersects with ORCID for academic authors and MusicBrainz for recording artists.]
+` `
 
-### IPI — Interested Party Information
+`The International Standard Recording Code identifies a specific recording. It is assigned by labels or by distributors acting on behalf of independent artists, under an allocation system administered by IFPI. An ISRC is twelve alphanumeric characters: a five-character Prefix Code (two letters and three alphanumeric characters, historically split as country code and registrant code), a two-digit Year of Reference, and a five-digit Designation Code. The code is assigned once and is supposed to travel with the recording forever. The standard is ISO 3901:2019, and the current reference document is the IFPI ISRC Handbook, 4th Edition, 2021.`
 
-[CISAC internal identifier, PRO membership linkage, why IPI is opaque to non-members and what breaks because of it.]
+` `
 
-## Structural weaknesses of the current regime
+`The failure modes are consistent. ISRCs get reused when a label recycles retired codes. They collide when distributors mint codes without consulting a central registry. They get mis-assigned when a distributor forgets to carry forward an ISRC that a label already assigned, and the same recording appears in the ecosystem twice with two different codes. They can be forged trivially — nothing about the twelve characters is cryptographically bound to the audio file they label. An ISRC is a claim that a registrant made, and the only thing preventing that claim from being wrong is the registrant's diligence.`
 
-[Identity is administrative, not cryptographic. Identifiers can be re-issued, unrevoked, or disputed without a canonical arbiter. Cross-registry reconciliation is manual and lossy. AI-generated works expose the gap between "we registered this" and "we can prove it was made this way."]
+` `
 
-## Provenance tokens as a substrate
+`### ISWC`
 
-[Conceptual model: a content-addressed identifier derived from a hash of the canonical work, signed by the author's key at the moment of creation, timestamped externally (OpenTimestamps / blockchain anchor), and recorded in a distributed append-only log. Registered identifiers (ISRC, ISWC, etc.) become *aliases* for the token, not primary keys.]
+` `
 
-## Mapping rules
+``The International Standard Musical Work Code identifies the underlying composition, independent of any specific recording. It is assigned by CISAC-affiliated collective management organizations through a system called ISWC-Net. Eleven characters total: a T prefix, nine digits, and a check digit calculated using the Luhn algorithm. Example: `T-034.524.680-1`.``
 
-### Token → ISRC
+` `
 
-[Mapping semantics for sound recordings. Token fields: hash of master audio, signature over the hash, timestamp. ISRC becomes a registered alias. Re-issuance of the ISRC does not change the token.]
+`ISWC has the same structural weaknesses as ISRC plus a harder problem: works and recordings are connected by human judgment, not by cryptographic binding. A CMO matching royalties for a specific recording has to identify which ISWC the ISRC corresponds to, which often requires title matching, writer matching, and fuzzy comparison across registries that spell the same composition three different ways. The MLC's unmatched pool is largely an ISRC-to-ISWC linkage problem at its root.`
 
-### Token → ISWC
+` `
 
-[Mapping for compositions. Token binds to the notated work (score/lead sheet hash) + the list of contributing composers' keys. Split disputes resolve against signatures, not administrative record.]
+`### UPC and EAN`
 
-### Token → UPC
+` `
 
-[Mapping for release bundles. A UPC points to a set of tokens (one per track). The bundle itself has its own token.]
+`The Universal Product Code and its European Article Number equivalent identify commercial products — physical or digital — at the retail tier. They are assigned by GS1 registrants, typically the distributor or label releasing the product. A UPC sits above the ISRC level: a single album UPC contains many ISRCs.`
 
-### Token → ISNI / IPI
+` `
 
-[Mapping for parties. A person's token is their key. ISNI and IPI are registered aliases maintained by the respective authorities.]
+`Of the five identifiers here, UPC is the least controversial and the least broken. It identifies a commercial aggregation, not a creative work, and the commercial tier has fewer trust-sensitive edge cases than the creative tier does. UPC problems are mostly operational — duplicate assignments, mis-linked codes, retail inventory drift — not the kind of catastrophic rights-routing failures that happen at the recording and work levels.`
 
-## Backward-compatibility patterns
+` `
 
-[How existing rights databases adopt tokens without re-issuing every ISRC. Claim: the token layer sits *above* the existing layer; no existing identifier changes. Databases add a token column; queries can still use the legacy identifier. Discuss ingest of historical catalog, handling of missing or disputed identifiers, and the opt-in path.]
+`### ISNI`
 
-## Standards-body integration points
+` `
 
-### DDEX ERN
+`The International Standard Name Identifier is a sixteen-character code assigned to public identities — artists, writers, producers, publishers, institutions. The first fifteen characters are digits; the sixteenth is a check character that can be a digit or the letter X, calculated using the MOD 11-2 algorithm from ISO/IEC 7064. The standard is ISO 27729, originally published in 2012 and updated as ISO 27729:2024. The ISNI registry, administered by the ISNI International Agency in London, contains over 16.5 million identities as of 2026.`
 
-[Where in the ERN schema a token field could be added without breaking existing consumers. Proposed XML element, namespace, required vs. optional. Implementation path with major labels vs. indie distributors.]
+` `
 
-### CISAC ISWC-Net
+`ISNI's failure modes are subtle. The record might be correct, incomplete, or internally inconsistent. An artist with three stage names might have one ISNI, three ISNIs, or none. The record might say an artist is signed to a label that no longer exists, or managed by a company that dissolved, or affiliated with a CMO in a country they no longer reside in. The registry is not wrong on purpose; it is simply behind reality, always.`
 
-[How the ISWC-Net registry could record tokens alongside ISWCs. Query semantics: "find the ISWC registered against this token". Governance questions for CISAC's member societies.]
+` `
 
-### US Mechanical Licensing Collective
+`### IPI`
 
-[MLC's black-box claim dispute process and how tokens could collapse disputes. Interaction with the public database, requirements for proof-of-ownership, compatibility with the MLC's claims API.]
+` `
 
-## Open questions
+``The Interested Party Information code is the CISAC-specific identifier for anyone with a rights interest in a musical work — composers, lyricists, publishers, sub-publishers, and administrators. The IPI Name Number is eleven digits; the IPI Base Number follows the pattern `H-NNNNNNNNN-C` (letter, nine digits, check digit). The system is administered by SUISA, the Swiss copyright society, on behalf of CISAC and its member societies. IPI is the backbone of global performance-royalty accounting.``
 
-[Non-exhaustive:
-- Governance: who operates the token registry? What are the failure modes if a single operator becomes untrustworthy?
-- Revocation: tokens are immutable; how do we handle works that must be suppressed (legal takedown, retraction)?
-- Key rotation and inheritance: what happens when an author dies or loses their key?
-- Dispute resolution: when signatures conflict, which arbitration mechanism applies?
-- Standards-body incentives: why would CISAC or IFPI adopt a substrate that dilutes their gatekeeping role?]
+` `
 
-## References
+`IPI has ISNI's problems plus the additional complexity of role-based identity. A single person might have multiple IPIs for different functions — one as a writer, one as a publisher, one as an administrator. Each function carries different rights and different royalty splits. When IPI records are wrong, the money goes to the wrong person, or to no one, and no verification mechanism exists to catch the error before settlement.`
 
-[To populate. Place-holder for ~15–25 references covering ISRC/ISWC/UPC/ISNI/IPI standards documents, DDEX ERN specification, CISAC ISWC-Net documentation, MLC public guidance, relevant academic literature on content-addressed storage and cryptographic provenance for media.]
+` `
+
+`### The pattern`
+
+` `
+
+`All five identifiers share a structural property: they are *assertions* that the assigning authority made, stored in a registry that downstream systems are expected to trust. None of them are bound to the audio content, the composition, or the identity they label. None of them can be independently verified by a third party without contacting the registry that issued them. When an assertion is wrong, the error travels through the system as truth.`
+
+` `
+
+`This is not an indictment of any registry. ISRC, ISWC, UPC, ISNI, and IPI are all well-run programs that handle millions of assignments correctly. The problem is that the system's integrity depends on every assigner being diligent, every registry being up to date, and every downstream consumer cross-referencing every assertion against the original source — which is not what happens in practice, and cannot scale to the volume the modern industry produces.`
+
+` `
+
+`## What a provenance token is`
+
+` `
+
+`A provenance token is a structured set of cryptographically signed claims, bound to a content hash of the audio, that any party can independently verify without contacting a central registry.`
+
+` `
+
+`Unpacked: the audio file is hashed using a collision-resistant function. One or more parties — the DAW, the producer, the label, a rightsholder, an AI generation system — sign claims about the audio. Each claim is typed: who made it, what it asserts, and what other claims it depends on. The signatures are verifiable against public keys whose binding to real-world identities is maintained by identity registries. Anyone with the token, the audio file, and the public keys can verify that the claims are intact, that the audio has not been modified, and that each signer asserted what they did at the time they did.`
+
+` `
+
+`The token is extensible. New claim types can be added without breaking existing verifiers. A verifier that doesn't understand a new claim type simply ignores it; a verifier that does understand it can act on it. This is the same design pattern that made TLS certificates durable across thirty years of evolution: the schema grows without forcing every participant to upgrade in lockstep.`
+
+` `
+
+`The token is portable. It travels with the audio file, either embedded in the file's metadata or alongside it in a separate artifact. DSPs, CMOs, distributors, and verification services all read the same token and reach the same conclusions.`
+
+` `
+
+`The token does not replace human judgment about rights. It verifies *what happened*: who signed what claim, when, and against what content. Whether the claim was authorized, whether the rights chain is complete, whether the commercial terms were honored — those are downstream questions that the token's existence makes answerable, not questions the token itself resolves. A provenance token is infrastructure for truth-telling, not a substitute for the industry's legal and commercial frameworks.`
+
+` `
+
+`The cryptographic specifics — which signature scheme, which hash function, which curve, which post-quantum migration path — are the subject of a later note. For the purposes of this note it is enough to know that the token is a structured, signed, extensible, portable, content-bound claim set.`
+
+` `
+
+`## The mapping`
+
+` `
+
+`The central engineering question is how provenance tokens relate to each of the five legacy identifiers. The answer differs by identifier, and being precise about the differences matters. A model that treats all five identically will either break something that works or fail to add anything useful.`
+
+` `
+
+`| Legacy identifier | What it identifies | Provenance-token equivalent | Legacy identifier's fate |`
+
+`|---|---|---|---|`
+
+`| ISRC | A specific recording | Recording-identity claim bound to content hash | Preserved as field inside token |`
+
+`| ISWC | A specific composition | Work-composition claim, independently signed | Preserved as field inside token |`
+
+`| UPC / EAN | A commercial product | Product-aggregation claim referencing recording tokens | Unchanged, minimal integration |`
+
+`| ISNI | A named identity | Identity claim referencing a public key | ISNI becomes key-to-identity binding |`
+
+`| IPI | A rights-interested party with role | Rights-role claim referencing identity and role | IPI becomes the PKI for CISAC rights |`
+
+` `
+
+`The rest of this section walks through each mapping in detail.`
+
+` `
+
+`### Recording-identity: ISRC becomes a field inside the token`
+
+` `
+
+`Under a provenance model, the primary identity of a recording is its content hash, signed by the original recording party. The hash is globally unique, cryptographically bound to the audio, and verifiable by anyone. The ISRC, by comparison, is a twelve-character label whose correctness depends on the assigner.`
+
+` `
+
+`The practical mapping is that the provenance token contains the ISRC as a preserved legacy field, while the authoritative identity of the recording is the content hash. Downstream systems that already key on ISRC continue to function unchanged. Systems that understand provenance tokens can verify that the ISRC claim is consistent with the content hash and reject files where the two disagree.`
+
+` `
+
+``This matters at ingestion. A DSP receiving a file with a provenance token can, in a single operation, verify that the recording claimed to be ISRC `USXYZ2500001` was signed by the registrant claiming that code, that the content hash matches the file on disk, and that the signature chain resolves to a public key with a binding to the claimed registrant's identity. That verification is constant-time and offline. Today, the DSP accepts the ISRC because the distributor said so.``
+
+` `
+
+`### Work-composition: ISWC as a separately signed claim`
+
+` `
+
+`Recordings and works have independent authorship structures. A single composition can be recorded thousands of times by different performers; a single recording session can produce multiple versions of the same work. The legacy system captures this with two separate identifiers (ISRC and ISWC) and a human-maintained linkage between them. The linkage is where most of the money gets lost.`
+
+` `
+
+`In a provenance model, a work is represented by its own signed claim, minted by the composition's rightsholder. The work-claim contains the ISWC as a preserved field, plus authorship assertions by the writers themselves, each individually signed against their own identity keys. A recording's provenance token references the work-claim by cryptographic link, not by string-matching the ISWC.`
+
+` `
+
+`The CMO matching problem changes shape. Today, the MLC (and every other CMO doing this work) is trying to decide whether an ISRC and an ISWC refer to the same underlying composition, based on fuzzy title and writer matching. In a provenance model, the recording's token literally references the work's token through a signed pointer. The match is deterministic, not probabilistic.`
+
+` `
+
+`The transition path is the load-bearing part of this mapping. For existing catalog — the vast majority of what CMOs handle today — provenance tokens will not exist retroactively. Legacy ISWC-ISRC linkages remain operational. For new releases, provenance tokens are minted at the point of recording and publishing, and CMOs can prefer the signed linkage over the fuzzy match where both are available. The unmatched pool does not shrink overnight. It stops growing.`
+
+` `
+
+`### Product aggregation: UPC unchanged`
+
+` `
+
+`UPCs identify products. Products are commercial constructs — albums, singles, EPs, deluxe editions, box sets — and their identity is largely commercial metadata rather than creative provenance. The UPC describes which recordings are packaged together for sale, not what those recordings are or who made them.`
+
+` `
+
+`In a provenance model, a product's provenance token aggregates the recording tokens it contains. The distributor signs a claim of the form: "product UPC 000-000-000-001 contains recordings with tokens A, B, C, and D, packaged for sale on this release date." The UPC itself is unchanged; it continues to function as the retail-tier identifier that DSPs and physical distributors already use.`
+
+` `
+
+`The only integration work here is that provenance-aware retail systems can verify that the recordings they claim to be selling match the recordings they are actually delivering. This catches substitution fraud and catalog drift, neither of which UPC alone can detect. But the UPC field, its registry, and its assignment process are untouched.`
+
+` `
+
+`### Identity: ISNI becomes the key-to-identity binding`
+
+` `
+
+`This is the most consequential mapping and the one that most fundamentally changes the role of an existing registry.`
+
+` `
+
+`Provenance tokens reference identities by cryptographic public key, not by ISNI number. The signing key for "Juan Lentino, producer" is what matters at verification time. The token does not ask: "what is this person's ISNI?" It asks: "is this signature from a key that binds to this real-world identity?"`
+
+` `
+
+`ISNI, under a provenance model, becomes the public-key infrastructure for music. The ISNI registry stops being solely a record of who exists and starts being, additionally, a record of which cryptographic keys authoritatively represent which public identities. An artist's ISNI entry contains, in addition to the current biographical and professional data, a set of signed public keys that represent their current, authorized signing identities. When the artist rotates a key — because of compromise, device loss, or policy — the ISNI record is updated, and downstream verifiers see the new key chain.`
+
+` `
+
+`This is a larger lift than preserving ISRC or ISWC, because it requires ISNI to adopt operational practices that resemble a certificate authority rather than a bibliographic registry. The existing ISNI-IA infrastructure is close to what is needed but not identical; the specifics of how identity registries evolve into PKIs for music is the subject of Note 4. What matters for this note is the shape of the mapping: ISNI does not disappear. It becomes more important. Its role shifts from *naming* identities to *authenticating* them.`
+
+` `
+
+`### Rights-role: IPI becomes the CISAC PKI`
+
+` `
+
+`IPI's mapping is structurally similar to ISNI's, with an additional layer of role-specificity. The same person may have multiple IPIs corresponding to different creative and commercial roles. In a provenance model, each role is represented by a separate signing key, and the IPI registry records which keys correspond to which roles for which identities.`
+
+` `
+
+`A writer signing a work-claim uses their writer-role key. The same person signing a publishing-rights claim uses their publisher-role key. The keys are distinct, auditable, and independently revocable. The CMO verifying royalty splits can confirm cryptographically that the claim was signed by the correct party in the correct capacity, without depending on the IPI registry being current — the signature itself is self-verifying once the key-to-identity binding is established.`
+
+` `
+
+`IPI registries, in this model, become the CISAC-wide PKI for rights-holder role authentication. This is consistent with CISAC's existing role as the global coordination body for performance-royalty accounting, and with SUISA's existing operational responsibility for the IPI system; the extension to include key management is a natural one, though operationally substantial.`
+
+` `
+
+`## Why preservation matters more than replacement`
+
+` `
+
+`A tempting reading of everything above is that the legacy stack is dead weight, and the provenance token could replace ISRC, ISWC, UPC, ISNI, and IPI wholesale if the industry had the political will. This reading is wrong, and adopting it would doom the framework.`
+
+` `
+
+`Three arguments.`
+
+` `
+
+`First, the legacy identifiers are embedded in forty years of contracts. Royalty agreements, master-use licenses, sync placements, distribution deals, publishing administration contracts, and CMO membership agreements all reference ISRC, ISWC, UPC, ISNI, and IPI as operational identifiers. Replacing them would require renegotiating every contract in the industry. The cost is astronomical and the benefit is theoretical. The framework has to be additive.`
+
+` `
+
+`Second, the legacy identifiers are embedded in working software. Every DAW, every DSP, every CMO's royalty engine, every distributor's ingestion pipeline, every label's catalog database, and every publisher's copyright accounting system reads, writes, and joins on these codes. Ripping them out would require rewriting the operational stack of the music industry. This also is not happening. The framework has to be additive.`
+
+` `
+
+`Third, the legacy identifiers are *not actually wrong* for the things they are good at. ISRC correctly identifies most recordings most of the time. ISWC correctly identifies most compositions most of the time. The failure cases are significant — hundreds of millions of dollars at the MLC alone — but they are failure cases of a system that is 90%+ correct at its core function. The MLC's current match rate for all royalties is over 90 percent. The provenance token addresses the remaining 10%, not the 90%. The correct framing is "provenance tokens verify what ISRC and ISWC already claim," not "provenance tokens replace ISRC and ISWC."`
+
+` `
+
+`This is the same lesson HTTPS learned about HTTP. TLS did not replace HTTP. TLS wrapped HTTP in a verification layer and let existing HTTP applications continue to function unchanged. Web servers still speak HTTP internally; the cryptographic layer sits above and below that existing protocol. The migration took fifteen years, it was gradual, and by the end almost every site on the internet had adopted it — because the upgrade path was additive rather than replacement-oriented. Music provenance has to follow the same playbook.`
+
+` `
+
+`## Standards-body integration points`
+
+` `
+
+`The mappings above are abstract. What do they look like inside the specific standards frameworks the industry already uses?`
+
+` `
+
+`### DDEX`
+
+` `
+
+``DDEX's Electronic Release Notification schema, ERN, is the backbone of metadata exchange between labels, distributors, and DSPs. ERN is extensible by design: new message elements can be added under the `<DealTerms>`, `<SoundRecording>`, and related nodes without breaking existing parsers. Provenance tokens fit naturally as a new optional element attached to `<SoundRecording>` at the recording level and to `<Release>` at the product level.``
+
+` `
+
+`A provenance-aware ingestion pipeline parses the token, verifies the signatures, and acts on the results. A provenance-unaware pipeline ignores the new element and continues to function against the existing ERN fields exactly as today. This is the backward-compatibility pattern ERN was designed for, and it means that any DDEX participant can adopt provenance at their own pace without coordinating with every other participant first.`
+
+` `
+
+`DDEX's existing working groups are the correct venue for standardizing the token's placement in the ERN schema. The contribution is a schema extension, not a new standard.`
+
+` `
+
+`### CISAC ISWC-Net`
+
+` `
+
+`ISWC-Net manages ISWC assignment and the registry of works. Provenance tokens do not modify the ISWC schema; they extend it indirectly by referencing ISWC numbers inside work-claim tokens minted outside ISWC-Net.`
+
+` `
+
+`The integration point is at the CMO level, not the ISWC-Net level. Each CMO can choose to accept provenance tokens alongside ISWC submissions, preferring the cryptographic linkage for royalty matching where both are available. CISAC itself, as the coordination body, is the appropriate venue for establishing common practices — but the technical change is modest and does not require ISWC-Net's schema to change.`
+
+` `
+
+`### The MLC`
+
+` `
+
+``The Mechanical Licensing Collective's Bulk Data Feed is the operational interface through which most of the unmatched-royalty problem would get addressed. A new optional field in the Bulk Data Feed schema — a `provenanceToken` field attached to recordings and works — is all that is needed. Provenance-aware publishers submit tokens; the MLC's matching engine prefers the signed linkage over the fuzzy match when a token is present.``
+
+` `
+
+`The economic motivation for adoption is direct. Publishers whose works are consistently unmatched today have a financial incentive to submit tokens, because the tokens increase the match rate. The MLC has a financial incentive to accept them, because the unmatched pool is a reputational problem that provenance reduces. Both sides of the relationship benefit from adoption, which is the shape of a standard that actually gets adopted rather than merely proposed.`
+
+` `
+
+`### C2PA`
+
+` `
+
+`The Coalition for Content Provenance and Authenticity has built a cryptographic provenance framework that already supports audio, images, video, and documents. C2PA's Technical Working Group operates a Live Video and Audio Task Force that is actively developing media-specific extensions, and the current specification is version 2.2, published in May 2025, with the October 2025 Content Credentials whitepaper being the most recent public document. C2PA has been fast-tracked as an ISO standard. The claim structures, signature schemes, and verification flows are directly applicable to music.`
+
+` `
+
+`What the music industry needs is not a parallel system to C2PA but a C2PA *profile* for music — a specification of which claim types are relevant to audio recordings and compositions specifically, which legacy identifiers are carried in which fields, and how the music-specific verification flow should behave. The C2PA working groups are the appropriate venue for this profile. A music-specific profile also creates interoperability with the broader content-provenance ecosystem that C2PA is anchoring across images and video, which matters for multi-media works — music videos, film and TV scoring, game audio — where a single provenance framework across media types is operationally simpler than parallel systems per medium.`
+
+` `
+
+`## Open questions`
+
+` `
+
+`This note is the first in a series. Several substantial questions are deferred to later notes, and it is worth being explicit about what is not answered here.`
+
+` `
+
+`First, how signing keys are provisioned for artists who do not currently have cryptographic identities. An artist with an ISNI does not automatically have a public-private keypair bound to that identity. The process of bootstrapping the PKI — who issues initial keys, how they are authenticated, how they are recovered after loss — is a substantial operational question covered in Note 4 on human identity signing.`
+
+` `
+
+`Second, what happens when identity records are fraudulent, compromised, or disputed. Revocation, key rotation, and identity succession (an artist's estate, a label's acquisition, a publisher's bankruptcy) are covered in Note 6 on registry federation and revocation.`
+
+` `
+
+`Third, how DSPs verify tokens at ingestion scale. DSPs ingest on the order of tens of thousands of tracks per day each, with the industry aggregate in the low hundreds of thousands daily. Verifying signatures, fetching key bindings, and validating claim chains at that scale has real engineering constraints. Note 7 covers implementation patterns for DSPs, CMOs, and labels.`
+
+` `
+
+`Fourth, how the framework handles works with disputed or fragmented authorship. Some compositions have contested writer splits that have not been resolved in decades. Cryptographic signing does not resolve those disputes; it makes them explicit. How the industry handles explicit-but-unresolved disputes is a policy question as much as a technical one, and is deferred to a future note or follow-up paper.`
+
+` `
+
+`Fifth, the question of whether AI-generated audio should be treated as a signed participant in the provenance system or as a separate category entirely. The framework's answer, developed in Note 5, is that AI generation systems sign their own contributions using their own keys, producing a fully verifiable record of which portions of a recording are human-authored and which are machine-generated. This question is politically charged and mechanically straightforward; Note 5 addresses both.`
+
+` `
+
+`## References`
+
+` `
+
+`1. The Mechanical Licensing Collective, *2023 Annual Royalty Recap*, [https://pages.themlc.com/2023-annual-royalty-recap](https://pages.themlc.com/2023-annual-royalty-recap). Source for blanket unmatched and held royalty figures.`
+
+`2. The Mechanical Licensing Collective, *Historical Royalties*, [https://www.themlc.com/historical-royalties](https://www.themlc.com/historical-royalties). Source for historical unmatched transfer amounts.`
+
+`3. IFPI, *International Standard Recording Code (ISRC) Handbook*, 4th Edition, 2021, [https://www.ifpi.org/wp-content/uploads/2021/02/ISRC_Handbook.pdf](https://www.ifpi.org/wp-content/uploads/2021/02/ISRC_Handbook.pdf). Reference standard for ISRC structure; corresponds to ISO 3901:2019.`
+
+`4. CISAC, *ISWC-Net Technical Documentation*, [https://www.iswc.org/](https://www.iswc.org/). Reference for ISWC structure and administration.`
+
+`5. GS1, *GS1 General Specifications*. Reference standard for UPC and EAN.`
+
+`6. ISNI International Agency, *ISNI Technical Documentation*, [https://isni.org/](https://isni.org/). Reference for ISNI structure, administered under ISO 27729:2024.`
+
+`7. CISAC, *IPI System Documentation*, [https://www.cisac.org/services/information-services/ipi](https://www.cisac.org/services/information-services/ipi). Administered operationally by SUISA.`
+
+`8. DDEX, *Electronic Release Notification (ERN) Standard*, current version at [https://ddex.net/](https://ddex.net/).`
+
+`9. Coalition for Content Provenance and Authenticity (C2PA), *Technical Specification*, version 2.2 (May 2025), [https://c2pa.org/specifications/](https://c2pa.org/specifications/).`
+
+`10. Lentino, J. (2026). *Provenance Over Detection: A Cryptographic Framework for Human Authorship Verification in Music Distribution.* SSRN preprint, Abstract ID 6402298.`
+
+`11. Internet Engineering Task Force, *The Transport Layer Security (TLS) Protocol Version 1.3*, RFC 8446, August 2018. Referenced for the additive-upgrade architectural analogy.`
