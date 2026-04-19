@@ -74,25 +74,20 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Build (static export)
+      - name: Build
         run: npm run build
 
       - name: Security audit
         run: npm audit --audit-level=high
 
-      - name: Attest build provenance
+      # Attest the provenance manifest itself. The manifest enumerates every
+      # note's sha256, commit SHA, OTS proof path, and DOI, so one signed
+      # attestation covers the entire archive state at this commit.
+      - name: Attest provenance manifest
         if: github.ref == 'refs/heads/main'
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: "out/**/*"
-
-      - name: Upload static artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: site
-          path: out/
-          retention-days: 14
-          if-no-files-found: error
+          subject-path: "provenance.json"
 
       - name: Upload provenance manifest
         uses: actions/upload-artifact@v4

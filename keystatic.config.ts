@@ -2,7 +2,10 @@ import { config, fields, collection } from "@keystatic/core";
 
 export default config({
   storage: {
-    kind: "local",
+    kind: "cloud",
+  },
+  cloud: {
+    project: "research/research",
   },
   ui: {
     brand: { name: "research.juanlentino.com" },

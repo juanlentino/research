@@ -6,8 +6,7 @@
   "author": "Juan Lentino <juan@juanlentino.com>",
   "license": "CC-BY-4.0",
   "scripts": {
-    "dev": "ENABLE_CMS=true next dev",
-    "dev:static": "next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
