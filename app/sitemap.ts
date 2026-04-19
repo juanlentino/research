@@ -8,12 +8,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date().toISOString();
 
   const staticUrls: MetadataRoute.Sitemap = [
-    { url: `${SITE.url}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${SITE.url}/about/`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
+    { url: SITE.url, lastModified: now, changeFrequency: "weekly", priority: 1 },
+    { url: `${SITE.url}/about`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
   ];
 
   const topicUrls: MetadataRoute.Sitemap = getTopicSlugs().map((t) => ({
-    url: `${SITE.url}/${t}/`,
+    url: `${SITE.url}/${t}`,
     lastModified: now,
     changeFrequency: "weekly",
     priority: 0.8,

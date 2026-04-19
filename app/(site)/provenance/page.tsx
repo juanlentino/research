@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: TOPIC.title,
   description: TOPIC.description,
   alternates: {
-    canonical: `${SITE.url}/${TOPIC.slug}/`,
+    canonical: `${SITE.url}/${TOPIC.slug}`,
     types: {
       "application/rss+xml": [
         {

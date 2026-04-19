@@ -73,7 +73,7 @@ export function ProvenancePanel({ entry }: { entry: ProvenanceEntry }) {
 
       <footer className="mt-4 pt-4 border-t border-[var(--rule)] text-xs text-[var(--fg-subtle)]">
         Verify independently:{" "}
-        <a href={`/verify/${entry.slug}/`}>/verify/{entry.slug}/</a>
+        <a href={`/verify/${entry.slug}`}>/verify/{entry.slug}</a>
       </footer>
     </section>
   );

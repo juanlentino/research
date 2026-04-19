@@ -10,7 +10,7 @@ export function GET() {
     title: `${SITE.name} — ${topic.title}`,
     description: topic.description,
     selfUrl: `${SITE.url}/${topic.slug}/feed.xml`,
-    homeUrl: `${SITE.url}/${topic.slug}/`,
+    homeUrl: `${SITE.url}/${topic.slug}`,
   });
   return new Response(xml, {
     headers: { "content-type": "application/rss+xml; charset=utf-8" },

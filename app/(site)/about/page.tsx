@@ -5,7 +5,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About",
   description: `About ${SITE.author.name} — ${SITE.description}`,
-  alternates: { canonical: `${SITE.url}/about/` },
+  alternates: { canonical: `${SITE.url}/about` },
 };
 
 export default function AboutPage() {

@@ -32,7 +32,7 @@ export default function HomePage() {
           {topics.map((t) => (
             <li key={t.slug} className="py-5">
               <Link
-                href={`/${t.slug}/`}
+                href={`/${t.slug}`}
                 className="flex items-baseline justify-between gap-6 no-underline hover:no-underline"
               >
                 <div>

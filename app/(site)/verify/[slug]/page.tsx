@@ -23,7 +23,7 @@ export async function generateMetadata({
   return {
     title: `Verify — ${note.frontmatter.title}`,
     description: `Independent verification instructions for "${note.frontmatter.title}".`,
-    alternates: { canonical: `${SITE.url}/verify/${slug}/` },
+    alternates: { canonical: `${SITE.url}/verify/${slug}` },
     robots: { index: false, follow: true },
   };
 }
@@ -152,7 +152,7 @@ shasum -a 256 ${entry.content_path}`}
               .{" "}
             </>
           ) : null}
-          <Link href={`/${TOPIC}/${slug}/`}>Back to the note.</Link>
+          <Link href={`/${TOPIC}/${slug}`}>Back to the note.</Link>
         </footer>
       </section>
     </Container>

@@ -15,10 +15,10 @@ export function SiteHeader() {
             <span className="text-[var(--fg-subtle)]">.juanlentino.com</span>
           </Link>
           <nav className="flex items-center gap-5 text-sm text-[var(--fg-muted)]">
-            <Link href="/provenance/" className="no-underline hover:text-[var(--fg)]">
+            <Link href="/provenance" className="no-underline hover:text-[var(--fg)]">
               Provenance
             </Link>
-            <Link href="/about/" className="no-underline hover:text-[var(--fg)]">
+            <Link href="/about" className="no-underline hover:text-[var(--fg)]">
               About
             </Link>
             <ThemeToggle />

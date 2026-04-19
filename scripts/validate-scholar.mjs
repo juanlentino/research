@@ -68,7 +68,7 @@ for (const topic of topics) {
       errs.push(`date_updated must be YYYY-MM-DD: ${fm.date_updated}`);
     }
     if (fm.canonical_url) {
-      const expected = `${SITE_URL}/${topic}/${slug}/`;
+      const expected = `${SITE_URL}/${topic}/${slug}`;
       if (fm.canonical_url !== expected) {
         errs.push(`canonical_url should be "${expected}", got "${fm.canonical_url}"`);
       }

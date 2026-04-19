@@ -3,7 +3,7 @@ import type { Note } from "@/lib/types";
 
 export function NoteCard({ note }: { note: Note }) {
   const { frontmatter } = note;
-  const href = `/${frontmatter.topic}/${frontmatter.slug}/`;
+  const href = `/${frontmatter.topic}/${frontmatter.slug}`;
   return (
     <Link href={href} className="group block no-underline">
       <div className="flex items-baseline gap-4 text-xs tabular-nums text-[var(--fg-subtle)]">
