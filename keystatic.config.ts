@@ -41,6 +41,11 @@ export default config({
           label: "Date updated",
           validation: { isRequired: true },
         }),
+        scheduled_for: fields.date({
+          label: "Scheduled for (optional)",
+          description:
+            "If set, the note is hidden from the site until this date. A daily rebuild picks it up automatically. Leave blank to publish immediately.",
+        }),
         author: fields.text({
           label: "Author",
           defaultValue: "Juan Lentino",

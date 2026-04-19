@@ -1,0 +1,31 @@
+name: scheduled-publish
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-publish
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    name: Trigger Vercel production rebuild
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping Vercel deploy hook
+        env:
+          HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOOK_URL:-}" ]; then
+            echo "::error::VERCEL_DEPLOY_HOOK_URL secret is not set. See README."
+            exit 1
+          fi
+          response=$(curl -fsS -X POST "$HOOK_URL")
+          echo "Vercel response: $response"

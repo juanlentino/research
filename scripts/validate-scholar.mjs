@@ -46,6 +46,8 @@ const topics = readdirSync(root, { withFileTypes: true })
 let failures = 0;
 let published = 0;
 let drafts = 0;
+let scheduled = 0;
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 for (const topic of topics) {
   const dir = join(root, topic);
@@ -98,6 +100,20 @@ for (const topic of topics) {
     if (fm.date_updated && !ISO_DATE.test(fm.date_updated)) {
       errs.push(`date_updated must be YYYY-MM-DD: ${fm.date_updated}`);
     }
+    if (fm.scheduled_for && !ISO_DATE.test(fm.scheduled_for)) {
+      errs.push(`scheduled_for must be YYYY-MM-DD: ${fm.scheduled_for}`);
+    }
+    if (
+      fm.scheduled_for &&
+      fm.date_published &&
+      ISO_DATE.test(fm.scheduled_for) &&
+      ISO_DATE.test(fm.date_published) &&
+      fm.scheduled_for < fm.date_published
+    ) {
+      errs.push(
+        `scheduled_for (${fm.scheduled_for}) is before date_published (${fm.date_published}) — scheduled release should be on or after the stated publication date`,
+      );
+    }
     if (fm.date_updated && fm.date_published && fm.date_updated < fm.date_published) {
       errs.push(
         `date_updated (${fm.date_updated}) is before date_published (${fm.date_published})`,
@@ -127,10 +143,17 @@ for (const topic of topics) {
       console.error(`✗ ${topic}/${file}`);
       for (const e of errs) console.error(`  · ${e}`);
     } else {
-      const label = fm.status === "draft" ? "(draft, excluded from build)" : "";
+      let label = "";
+      if (fm.status === "draft") {
+        label = "(draft, excluded from build)";
+        drafts += 1;
+      } else if (fm.scheduled_for && fm.scheduled_for > TODAY_ISO) {
+        label = `(scheduled for ${fm.scheduled_for}, hidden until then)`;
+        scheduled += 1;
+      } else {
+        published += 1;
+      }
       console.log(`✓ ${topic}/${file} ${label}`);
-      if (fm.status === "draft") drafts += 1;
-      else published += 1;
     }
   }
 }
@@ -139,4 +162,6 @@ if (failures > 0) {
   console.error(`\n${failures} note(s) failed Scholar validation.`);
   process.exit(1);
 }
-console.log(`\nAll notes pass: ${published} published, ${drafts} drafts.`);
+console.log(
+  `\nAll notes pass: ${published} published, ${scheduled} scheduled, ${drafts} drafts.`,
+);

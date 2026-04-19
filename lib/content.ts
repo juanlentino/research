@@ -5,6 +5,16 @@ import type { Note, NoteFrontmatter, TopicSummary } from "./types";
 
 const CONTENT_ROOT = join(process.cwd(), "content");
 
+// The build captures today's date once so every helper filters against
+// the same reference — no drift between getNote and getNotesByTopic.
+// Uses UTC date so the visibility rule matches the cron schedule that
+// triggers nightly rebuilds.
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
+
+function isHiddenBySchedule(fm: NoteFrontmatter): boolean {
+  return Boolean(fm.scheduled_for && fm.scheduled_for > TODAY_ISO);
+}
+
 export const TOPICS: Record<string, Omit<TopicSummary, "noteCount">> = {
   provenance: {
     slug: "provenance",
@@ -53,13 +63,17 @@ export function getTopics(): TopicSummary[] {
   }));
 }
 
-// Reader-facing: excludes drafts (by status and by _drafts/ path) but
+// Reader-facing: excludes drafts (by status and by _drafts/ path),
+// excludes notes whose scheduled_for date is still in the future, but
 // keeps retracted notes visible so their URLs stay live with the
 // retraction notice. Sorted newest-first.
 export function getNotesByTopic(topic: string): Note[] {
   return readTopicDir(topic)
     .map((slug) => parseNote(topic, slug))
-    .filter((n) => n.frontmatter.status !== "draft")
+    .filter(
+      (n) =>
+        n.frontmatter.status !== "draft" && !isHiddenBySchedule(n.frontmatter),
+    )
     .sort((a, b) =>
       b.frontmatter.date_published.localeCompare(a.frontmatter.date_published),
     );
@@ -77,6 +91,7 @@ export function getNote(topic: string, slug: string): Note | null {
   try {
     const note = parseNote(topic, slug);
     if (note.frontmatter.status === "draft") return null;
+    if (isHiddenBySchedule(note.frontmatter)) return null;
     return note;
   } catch {
     return null;

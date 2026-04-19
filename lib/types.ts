@@ -20,6 +20,7 @@ export interface NoteFrontmatter {
   keywords: string[];
   version: number;
   status: NoteStatus;
+  scheduled_for?: string;
   pdf_url?: string;
   ssrn_url?: string;
   changelog: ChangelogEntry[];

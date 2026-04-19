@@ -154,6 +154,28 @@ The hash pins the exact bytes of the MDX source at a specific commit. Third part
 
 `provenance.json` itself is gitignored; it's an ephemeral build artifact. The authoritative record is the signed attestation + the git history.
 
+## Scheduled publishing
+
+Notes may be written and committed well before their public release. Set `scheduled_for: YYYY-MM-DD` in frontmatter to hide a note from every reader surface (sitemap, both RSS feeds, the topic index, direct URL access) until that date. When the date arrives, the next build re-emits the note as visible.
+
+**Visibility gate.** `lib/content.ts` captures the build-time date once (UTC) and applies `isHiddenBySchedule(fm)` in both `getNotesByTopic` and `getNote`. A scheduled note is effectively invisible — including from `generateStaticParams`, so no static page is prerendered for it until release.
+
+**Daily trigger.** `.github/workflows/scheduled-publish.yml` runs at `0 12 * * *` UTC (07:00 ET EDT / 08:00 ET EST) and POSTs to a Vercel deploy hook. Vercel rebuilds production, the new build reads the current date, and any note whose `scheduled_for` has passed becomes visible. Lag between the scheduled date and first visibility is at most ~24 hours.
+
+**One-time setup (required before scheduling works):**
+
+1. Vercel → `research` project → Settings → Git → Deploy Hooks → "Create Hook"
+2. Name: `scheduled-publish`, Branch: `main`
+3. Copy the resulting URL
+4. GitHub → repo Settings → Secrets and variables → Actions → New repository secret
+5. Name: `VERCEL_DEPLOY_HOOK_URL`, value: paste the URL
+
+The workflow will fail loud (`::error::VERCEL_DEPLOY_HOOK_URL secret is not set`) until this is done.
+
+**Provenance implication.** OTS proofs are generated when the MDX is *committed*, not when it *publishes*. A note committed 2026-04-18 with `scheduled_for: 2026-06-01` has a Bitcoin-anchored timestamp showing the April date — which is the strongest form of prior-art evidence, not the weakest. Defensive publication is about when you *had* the work, not when you chose to release it.
+
+**Relationship to `date_published`.** `date_published` is the canonical publication date surfaced in Scholar metadata and the reader-visible byline. `scheduled_for` is a visibility gate. They should match for normal scheduled publishes; the validator rejects `scheduled_for < date_published`.
+
 ## PDF snapshot workflow
 
 Every published note has a rendered PDF snapshot at `public/pdf/<topic>/<slug>.pdf`, committed to the repo. The PDF is a self-contained reading artifact: if the site is offline forever and the MDX source is unparseable to a future reader, the PDF is still recoverable from git.
@@ -174,17 +196,18 @@ Every published note has a rendered PDF snapshot at `public/pdf/<topic>/<slug>.p
 
 Every new note — whether authored in Keystatic, GitHub web editor, or locally — should complete every item below before merging. The goal: on first deploy, the note has full Scholar metadata, an OTS proof on the way, a PDF on the way, and a clear path to a DOI.
 
-1. **Frontmatter.** All required fields populated: `title`, `slug` (matches filename), `topic`, `date_published`, `date_updated`, `author`, `orcid`, `license`, `canonical_url` (slash-free, matches `/{topic}/{slug}`), `abstract` (40+ chars), `keywords` (2+), `version`, `status: published`, `changelog` with initial entry. Optional: `doi`, `pdf_url`.
+1. **Frontmatter.** All required fields populated: `title`, `slug` (matches filename), `topic`, `date_published`, `date_updated`, `author`, `orcid`, `license`, `canonical_url` (slash-free, matches `/{topic}/{slug}`), `abstract` (40+ chars), `keywords` (2+), `version`, `status: published`, `changelog` with initial entry. Optional: `doi`, `pdf_url`, `ssrn_url`, `scheduled_for`.
 2. **Filename = slug.** `content/<topic>/<slug>.mdx`. Slug is lowercase-alphanumeric-hyphen, no underscores.
-3. **Local build passes.** `npm run build` succeeds — `validate:scholar` + `validate:feed` + `provenance` all green.
-4. **Commit + push.** Commit message is a prior-art record: describe the publication event, not the file. Example: `publish(provenance): "On identifier mapping" (v1)`.
-5. **Automatic follow-ups (no action needed):**
-   - OTS bot stamps `.mdx.ots` → commits back (~1 min)
+3. **Schedule (optional).** Set `scheduled_for: YYYY-MM-DD` to hide the note until that date. Commit now — OTS stamps today (stronger prior-art claim, since the Bitcoin timestamp predates the public release). The daily cron at `.github/workflows/scheduled-publish.yml` triggers a Vercel rebuild every day at 12:00 UTC; when `scheduled_for <= today`, the filter in `lib/content.ts` lets the note through and the next build emits it.
+4. **Local build passes.** `npm run build` succeeds — `validate:scholar` + `validate:feed` + `provenance` all green.
+5. **Commit + push.** Commit message is a prior-art record: describe the publication event, not the file. Example: `publish(provenance): "On identifier mapping" (v1)`.
+6. **Automatic follow-ups (no action needed):**
+   - OTS bot stamps `.mdx.ots` → commits back (~1 min, runs on every MDX change whether visible or scheduled)
    - Vercel deploys → CI attests `provenance.json` (~3 min)
-   - PDF bot renders `public/pdf/<topic>/<slug>.pdf` → commits back (~2 min after deploy)
-   - Next build emits `citation_pdf_url` in the rendered `<head>`
-6. **DOI mint (manual, one-click).** GitHub → Actions → `zenodo-deposit` → "Run workflow" → enter topic + slug → choose `sandbox: false` for a real DOI. Merge the resulting DOI PR; site rebuilds with DOI in `<head>` and provenance panel.
-7. **Optional: companion publication.** If the note deserves a LinkedIn article or standards-body submission, record the cross-reference in the note's `changelog` or in a new `external_publications` field.
+   - PDF bot renders `public/pdf/<topic>/<slug>.pdf` → commits back (~2 min after deploy; skipped for notes hidden by `scheduled_for` since the live URL 404s until release)
+   - Scheduled-publish cron flips visibility at 12:00 UTC on the release date
+7. **DOI mint (manual, one-click).** GitHub → Actions → `zenodo-deposit` → "Run workflow" → enter topic + slug → choose `sandbox: false` for a real DOI. Merge the resulting DOI PR; site rebuilds with DOI in `<head>` and provenance panel.
+8. **Optional: companion publication.** If the note deserves a LinkedIn article or standards-body submission, record the cross-reference in the note's `changelog` or in a new `external_publications` field.
 
 ## SEO and academic metadata
 
