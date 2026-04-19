@@ -36,6 +36,24 @@ function readTopicDir(topic: string): string[] {
     .map((f) => f.replace(/\.mdx$/, ""));
 }
 
+// Scholarly-prose reading pace. 220 wpm is a reasonable default for
+// dense technical content; readers of this archive are not skimming.
+const WORDS_PER_MINUTE = 220;
+
+function computeReadingStats(body: string) {
+  // Strip MDX syntax that doesn't count as prose words: code fences,
+  // inline code, HTML/MDX tags, markdown link syntax, heading markers.
+  const stripped = body
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]*`/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]+\)/g, "$1")
+    .replace(/[#>*_~]/g, " ");
+  const words = stripped.split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.round(words / WORDS_PER_MINUTE));
+  return { words, minutes };
+}
+
 function parseNote(topic: string, slug: string): Note {
   const filepath = join(CONTENT_ROOT, topic, `${slug}.mdx`);
   const raw = readFileSync(filepath, "utf8");
@@ -53,7 +71,12 @@ function parseNote(topic: string, slug: string): Note {
     );
   }
 
-  return { frontmatter, body: content, filepath };
+  return {
+    frontmatter,
+    body: content,
+    filepath,
+    readingStats: computeReadingStats(content),
+  };
 }
 
 export function getTopics(): TopicSummary[] {

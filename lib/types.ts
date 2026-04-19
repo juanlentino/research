@@ -30,6 +30,12 @@ export interface Note {
   frontmatter: NoteFrontmatter;
   body: string;
   filepath: string;
+  readingStats: ReadingStats;
+}
+
+export interface ReadingStats {
+  words: number;
+  minutes: number;
 }
 
 export interface TopicSummary {

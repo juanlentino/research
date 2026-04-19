@@ -46,7 +46,7 @@ export default async function NotePage({
   return (
     <Container>
       <div className="py-16">
-        <NoteHeader fm={note.frontmatter} />
+        <NoteHeader fm={note.frontmatter} readingStats={note.readingStats} />
         <Prose>
           <MDXRemote
             source={note.body}

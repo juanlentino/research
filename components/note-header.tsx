@@ -1,6 +1,12 @@
-import type { NoteFrontmatter } from "@/lib/types";
+import type { NoteFrontmatter, ReadingStats } from "@/lib/types";
 
-export function NoteHeader({ fm }: { fm: NoteFrontmatter }) {
+export function NoteHeader({
+  fm,
+  readingStats,
+}: {
+  fm: NoteFrontmatter;
+  readingStats?: ReadingStats;
+}) {
   const updated = fm.date_updated && fm.date_updated !== fm.date_published;
   return (
     <header className="mb-10 pb-8 border-b border-[var(--rule)]">
@@ -20,6 +26,15 @@ export function NoteHeader({ fm }: { fm: NoteFrontmatter }) {
         ) : null}
         <span aria-hidden>·</span>
         <span>v{fm.version}</span>
+        {readingStats ? (
+          <>
+            <span aria-hidden>·</span>
+            <span>
+              {readingStats.minutes} min · {readingStats.words.toLocaleString()}{" "}
+              words
+            </span>
+          </>
+        ) : null}
         {fm.status === "retracted" ? (
           <span className="ml-2 rounded-sm border border-[var(--accent)] px-1.5 py-0.5 text-[0.65rem] uppercase tracking-[0.18em] text-[var(--accent)]">
             Retracted
