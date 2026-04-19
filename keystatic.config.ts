@@ -103,11 +103,14 @@ export default config({
         }),
         status: fields.select({
           label: "Status",
+          description:
+            "Draft = tracked in git but excluded from the site; Published = visible; Retracted = visible with a retraction notice, URL stays live.",
           options: [
+            { label: "Draft", value: "draft" },
             { label: "Published", value: "published" },
             { label: "Retracted", value: "retracted" },
           ],
-          defaultValue: "published",
+          defaultValue: "draft",
         }),
         changelog: fields.array(
           fields.object({

@@ -46,8 +46,11 @@ next-env.d.ts
 *.swp
 *.swo
 
-# draft notes (unpublished)
-content/**/_drafts/
+# Draft notes live under content/<topic>/_drafts/ and are tracked in git
+# (so collaborators can see in-flight work) but excluded from the build
+# surface by lib/content.ts and scripts/validate-scholar.mjs. Do not
+# gitignore this path — drafts without a commit trail have no
+# defensive-publication value.
 
 # Claude Code local state (personal permissions cache)
 .claude/settings.local.json

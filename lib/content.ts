@@ -14,6 +14,10 @@ export const TOPICS: Record<string, Omit<TopicSummary, "noteCount">> = {
   },
 };
 
+// Files starting with _ are treated as hidden (e.g. _drafts/), and
+// directories with the same prefix are skipped entirely. Anything under a
+// _drafts/ subdirectory is excluded from all reader-facing surfaces even
+// when tracked in git.
 function readTopicDir(topic: string): string[] {
   const dir = join(CONTENT_ROOT, topic);
   if (!existsSync(dir)) return [];
@@ -45,14 +49,17 @@ function parseNote(topic: string, slug: string): Note {
 export function getTopics(): TopicSummary[] {
   return Object.values(TOPICS).map((t) => ({
     ...t,
-    noteCount: readTopicDir(t.slug).length,
+    noteCount: getNotesByTopic(t.slug).length,
   }));
 }
 
+// Reader-facing: excludes drafts (by status and by _drafts/ path) but
+// keeps retracted notes visible so their URLs stay live with the
+// retraction notice. Sorted newest-first.
 export function getNotesByTopic(topic: string): Note[] {
   return readTopicDir(topic)
     .map((slug) => parseNote(topic, slug))
-    .filter((n) => n.frontmatter.status !== "retracted" || true)
+    .filter((n) => n.frontmatter.status !== "draft")
     .sort((a, b) =>
       b.frontmatter.date_published.localeCompare(a.frontmatter.date_published),
     );
@@ -68,7 +75,9 @@ export function getAllNotes(): Note[] {
 
 export function getNote(topic: string, slug: string): Note | null {
   try {
-    return parseNote(topic, slug);
+    const note = parseNote(topic, slug);
+    if (note.frontmatter.status === "draft") return null;
+    return note;
   } catch {
     return null;
   }

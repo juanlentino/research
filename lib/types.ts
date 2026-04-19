@@ -1,4 +1,4 @@
-export type NoteStatus = "published" | "retracted";
+export type NoteStatus = "draft" | "published" | "retracted";
 
 export interface ChangelogEntry {
   date: string;
@@ -19,7 +19,7 @@ export interface NoteFrontmatter {
   abstract: string;
   keywords: string[];
   version: number;
-  status?: NoteStatus;
+  status: NoteStatus;
   pdf_url?: string;
   changelog: ChangelogEntry[];
 }
