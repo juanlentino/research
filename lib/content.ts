@@ -24,15 +24,15 @@ export const TOPICS: Record<string, Omit<TopicSummary, "noteCount">> = {
   },
 };
 
-// Files starting with _ are treated as hidden (e.g. _drafts/), and
-// directories with the same prefix are skipped entirely. Anything under a
-// _drafts/ subdirectory is excluded from all reader-facing surfaces even
-// when tracked in git.
+// Enumerate MDX files in a topic directory. Notes live flat at
+// content/<topic>/<slug>.mdx regardless of publication status; visibility
+// on reader-facing surfaces is gated by frontmatter `status` (and
+// `scheduled_for`) via getNotesByTopic / getNote below.
 function readTopicDir(topic: string): string[] {
   const dir = join(CONTENT_ROOT, topic);
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
-    .filter((f) => f.endsWith(".mdx") && !f.startsWith("_"))
+    .filter((f) => f.endsWith(".mdx"))
     .map((f) => f.replace(/\.mdx$/, ""));
 }
 
@@ -86,9 +86,9 @@ export function getTopics(): TopicSummary[] {
   }));
 }
 
-// Reader-facing: excludes drafts (by status and by _drafts/ path),
-// excludes notes whose scheduled_for date is still in the future, but
-// keeps retracted notes visible so their URLs stay live with the
+// Reader-facing: excludes drafts (by frontmatter status), excludes
+// notes whose scheduled_for date is still in the future, but keeps
+// retracted notes visible so their URLs stay live with the
 // retraction notice. Sorted newest-first.
 export function getNotesByTopic(topic: string): Note[] {
   return readTopicDir(topic)

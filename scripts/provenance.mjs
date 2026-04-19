@@ -51,14 +51,17 @@ function collectNotes() {
   const entries = [];
   for (const topic of collectTopics()) {
     const dir = join(CONTENT, topic);
-    const files = readdirSync(dir).filter(
-      (f) => f.endsWith(".mdx") && !f.startsWith("_"),
-    );
+    const files = readdirSync(dir).filter((f) => f.endsWith(".mdx"));
     for (const file of files) {
       const abs = join(dir, file);
       const rel = relative(ROOT, abs);
       const bytes = readFileSync(abs);
       const { data: fm } = matter(bytes.toString("utf8"));
+      // Drafts live in git (and get OTS proofs on commit) but are
+      // excluded from the signed manifest until their status flips to
+      // published. The attestation covers the published archive state,
+      // matching getNotesByTopic / getAllNotes.
+      if (fm.status === "draft") continue;
       const { commit, commit_date } = gitLast(rel);
       const otsPath = `${rel}.ots`;
       const otsExists = existsSync(join(ROOT, otsPath));
