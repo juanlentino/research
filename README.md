@@ -37,7 +37,7 @@ content/<topic>/<slug>.mdx
 content/<topic>/<slug>.mdx.ots   # auto-committed by OTS workflow
 ```
 
-Each MDX file includes YAML frontmatter with publication date, DOI, abstract, and keywords. See [CLAUDE.md](CLAUDE.md) for full schema.
+Each MDX file includes YAML frontmatter with publication date, DOI, abstract, and keywords. See [ARCHITECTURE.md](ARCHITECTURE.md) for full schema and the complete technical reference.
 
 ## Stack
 

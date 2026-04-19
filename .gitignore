@@ -55,5 +55,13 @@ next-env.d.ts
 # Claude Code local state (personal permissions cache)
 .claude/settings.local.json
 
+# AI-tooling configuration (Claude Code instructions) — local-only.
+# The public technical reference is ARCHITECTURE.md.
+CLAUDE.md
+
+# Editorial schedule and campaign cadence — local-only.
+# Publishing outcomes are visible on the site; planning details are not.
+schedule.md
+
 # generated at build time; CI regenerates from the source of truth
 provenance.json
