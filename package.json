@@ -32,16 +32,16 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
-    "@tailwindcss/postcss": "4.2.2",
+    "@tailwindcss/postcss": "4.2.4",
     "@types/node": "22.19.17",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "eslint": "9.39.4",
     "eslint-config-next": "15.5.15",
-    "fast-xml-parser": "^5.7.1",
-    "postcss": "8.5.10",
-    "puppeteer": "^24.41.0",
-    "tailwindcss": "4.2.2",
+    "fast-xml-parser": "^5.7.2",
+    "postcss": "8.5.12",
+    "puppeteer": "^24.42.0",
+    "tailwindcss": "4.2.4",
     "typescript": "5.7.2"
   },
   "engines": {
